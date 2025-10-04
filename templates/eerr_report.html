@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EERR por tienda</title>
+    <link rel="stylesheet" href="static/css/eerr_report.css">
+</head>
+<body>
+    <div class="brand-bar">
+        <div class="brand-logo">
+            <img src="images/Logo_Header.png" alt="Yáneken" />
+        </div>
+        <div class="brand-actions">
+            <a class="nav-button primary is-active" href="EERR_por_tienda.html">EERR real y presupuesto</a>
+            <a class="nav-button secondary" href="Simulador_EERR.html">Simulador de EERR</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Estado de Resultados por Tienda</h1>
+        <p class="lead">Selecciona una tienda para revisar sus métricas mensuales y el punto de equilibrio estimado.</p>
+
+        <div class="card selection-card">
+            <h2>Selector de Banner / Sucursal</h2>
+            <div class="selection-controls">
+                <div class="selection-row">
+                    <label for="bannerSelect">Banner</label>
+                    <select id="bannerSelect">
+                        <option value="">Selecciona un banner…</option>
+                    </select>
+                </div>
+                <div class="selection-row">
+                    <label for="storeSelect">Sucursal</label>
+                    <select id="storeSelect" disabled>
+                        <option value="">Selecciona un banner primero…</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="storeDetails" class="card hidden">
+            <div class="header">
+                <h2 id="storeTitle"></h2>
+                <p class="helper" id="storeBanner"></p>
+            </div>
+            <div class="scenario-legend">
+                <span class="scenario-pill"><span class="swatch"></span>Real</span>
+                <span class="scenario-pill is-budget"><span class="swatch"></span>Presupuesto</span>
+            </div>
+            <div class="table-wrapper">
+                <table id="eerrTable" class="eerr-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="heatmapCard" class="card hidden">
+            <h3>Mapa de calor: Venta v/s Margen Contribución</h3>
+            <p class="helper">Ajusta los incrementos para calcular el EBITDA% según venta y margen de contribución.</p>
+            <p id="rentThreshold" class="rent-threshold hidden"></p>
+            <div class="controls-block">
+                <h4>Escenario de ventas y márgenes</h4>
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label for="ventaMin">Venta mínima (MM$)</label>
+                        <input id="ventaMin" type="number" min="0" step="0.1" value="0" />
+                        <small>Valor inicial expresado en millones de pesos.</small>
+                    </div>
+                    <div class="input-group">
+                        <label for="ventaStep">Delta venta (MM$)</label>
+                        <input id="ventaStep" type="number" min="0.01" step="0.1" value="0.5" />
+                        <small>Incremento de venta en millones.</small>
+                    </div>
+                    <div class="input-group">
+                        <label for="margenMin">Margen mínimo (%)</label>
+                        <input id="margenMin" type="number" min="0" step="0.1" value="0" />
+                        <small>Punto de partida del margen de contribución.</small>
+                    </div>
+                    <div class="input-group">
+                        <label for="margenStep">Delta margen (%)</label>
+                        <input id="margenStep" type="number" min="0.1" step="0.1" value="1" />
+                        <small>Incremento del margen de contribución.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="heatmapTable" class="heatmap">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="controls-block">
+                <h4>Formato del mapa</h4>
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label for="ventaLevels">Filas (ventas)</label>
+                        <input id="ventaLevels" type="number" min="1" step="1" value="15" />
+                        <small>Cantidad de niveles en el eje venta.</small>
+                    </div>
+                    <div class="input-group">
+                        <label for="margenLevels">Columnas (margen)</label>
+                        <input id="margenLevels" type="number" min="1" step="1" value="20" />
+                        <small>Niveles a mostrar para el margen.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="rentFactsCard" class="card hidden">
+            <h3>Indicadores operacionales</h3>
+            <div class="facts-title">Arriendos</div>
+            <div class="facts-grid">
+                <div class="fact-item">
+                    <span class="fact-label">Arriendo mínimo (UF)</span>
+                    <span id="factVmmUf" class="fact-value">–</span>
+                </div>
+                <div class="fact-item">
+                    <span class="fact-label">Arriendo variable (%)</span>
+                    <span id="factPercent" class="fact-value">–</span>
+                </div>
+                <div class="fact-item">
+                    <span class="fact-label">Fondo promoción (%)</span>
+                    <span id="factFondo" class="fact-value">–</span>
+                </div>
+                <div class="fact-item">
+                    <span class="fact-label">Venta para activar arriendo porcentual</span>
+                    <span id="factThreshold" class="fact-value">–</span>
+                </div>
+            </div>
+            <div class="facts-title">Dotación</div>
+            <div class="facts-grid">
+                <div class="fact-item">
+                    <span class="fact-label">Dotación actual</span>
+                    <span id="factDotacionTotal" class="fact-value">–</span>
+                    <ul id="factDotacionDetalle" class="fact-detail-list hidden"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="resumenCard" class="card hidden">
+            <h2>EBITDA consolidado por mes</h2>
+            <div class="table-wrapper">
+                <table id="resumenTable" class="summary-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card configuration-card">
+            <h2>Configuración</h2>
+            <div class="width-controls">
+                <label for="widthSelect">Ancho de la interfaz</label>
+                <select id="widthSelect">
+                    <option value="1200">1200 px</option>
+                    <option value="1300">1300 px</option>
+                    <option value="1400">1400 px</option>
+                    <option value="1500">1500 px</option>
+                    <option value="1600">1600 px</option>
+                    <option value="1700">1700 px</option>
+                    <option value="1800">1800 px</option>
+                    <option value="1900" selected>1900 px (predeterminado)</option>
+                    <option value="2000">2000 px</option>
+                </select>
+                <span class="helper">Rango disponible: 1200 a 2000 px en incrementos de 100.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const metricConfig = __METRIC_CONFIG__;
+        const storeData = __STORE_DATA__;
+        const bannerMap = __BANNER_MAP__;
+        const bannerSummary = __BANNER_SUMMARY__;
+        const STAFF_ROLES = __STAFF_ROLES__;
+        const SCENARIO_REAL = '__SCENARIO_REAL__';
+        const SCENARIO_BUDGET = '__SCENARIO_BUDGET__';
+
+        const bannerSelect = document.getElementById('bannerSelect');
+        const storeSelect = document.getElementById('storeSelect');
+        const storeDetails = document.getElementById('storeDetails');
+        const heatmapCard = document.getElementById('heatmapCard');
+        const resumenCard = document.getElementById('resumenCard');
+        const storeTitle = document.getElementById('storeTitle');
+        const storeBanner = document.getElementById('storeBanner');
+        const eerrTableHead = document.querySelector('#eerrTable thead');
+        const eerrTableBody = document.querySelector('#eerrTable tbody');
+        const resumenHead = document.querySelector('#resumenTable thead');
+        const resumenBody = document.querySelector('#resumenTable tbody');
+        const heatmapHead = document.querySelector('#heatmapTable thead');
+        const heatmapBody = document.querySelector('#heatmapTable tbody');
+        const rentThresholdEl = document.getElementById('rentThreshold');
+        const rentFactsCard = document.getElementById('rentFactsCard');
+        const factThresholdEl = document.getElementById('factThreshold');
+        const factVmmUfEl = document.getElementById('factVmmUf');
+        const factPercentEl = document.getElementById('factPercent');
+        const factFondoEl = document.getElementById('factFondo');
+        const factDotacionTotalEl = document.getElementById('factDotacionTotal');
+        const factDotacionDetalleEl = document.getElementById('factDotacionDetalle');
+        const ventaMinInput = document.getElementById('ventaMin');
+        const ventaStepInput = document.getElementById('ventaStep');
+        const ventaLevelsInput = document.getElementById('ventaLevels');
+        const margenMinInput = document.getElementById('margenMin');
+        const margenStepInput = document.getElementById('margenStep');
+        const margenLevelsInput = document.getElementById('margenLevels');
+        const widthSelect = document.getElementById('widthSelect');
+
+        const currencyFormatter = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
+        const percentFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const percentFormatterShort = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const ufFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const staffFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const MONTH_LABELS = ['Ene.', 'Feb.', 'Mar.', 'Abr.', 'May.', 'Jun.', 'Jul.', 'Ago.', 'Sep.', 'Oct.', 'Nov.', 'Dic.'];
+
+        function formatMonthLabel(isoValue) {
+            if (!isoValue) {
+                return '';
+            }
+            const date = new Date(`${isoValue}T00:00:00Z`);
+            const month = date.getUTCMonth();
+            const year = String(date.getUTCFullYear()).slice(-2);
+            return `${MONTH_LABELS[month]} ${year}`;
+        }
+        let currentStoreKey = '';
+        const DEFAULT_CONTAINER_WIDTH = '1900';
+
+        function applyContainerWidth(value) {
+            const root = document.documentElement;
+            if (!root) {
+                return;
+            }
+            const numeric = Number.parseInt(value, 10);
+            if (Number.isFinite(numeric) && numeric >= 800) {
+                root.style.setProperty('--container-max-width', `${numeric}px`);
+            } else {
+                root.style.setProperty('--container-max-width', `${DEFAULT_CONTAINER_WIDTH}px`);
+                if (widthSelect) {
+                    widthSelect.value = DEFAULT_CONTAINER_WIDTH;
+                }
+            }
+        }
+
+        function populateSelectors() {
+            const banners = Object.keys(bannerMap).sort((a, b) => a.localeCompare(b));
+            const existing = new Set(Array.from(bannerSelect.options).map((opt) => opt.value));
+            for (const banner of banners) {
+                if (!banner) {
+                    continue;
+                }
+                if (existing.has(banner)) {
+                    continue;
+                }
+                const option = document.createElement('option');
+                option.value = banner;
+                option.textContent = banner;
+                bannerSelect.appendChild(option);
+            }
+            bannerSelect.value = '';
+            storeSelect.innerHTML = '';
+            const storePlaceholder = document.createElement('option');
+            storePlaceholder.value = '';
+            storePlaceholder.textContent = 'Selecciona un banner primero…';
+            storeSelect.appendChild(storePlaceholder);
+            storeSelect.disabled = true;
+            storeDetails.classList.add('hidden');
+            heatmapCard.classList.add('hidden');
+            rentFactsCard.classList.add('hidden');
+            ventaLevelsInput.value = '15';
+            margenLevelsInput.value = '20';
+        }
+
+        function formatValue(value, formato) {
+            if (value === null || value === undefined) {
+                return '–';
+            }
+            if (formato === 'percent') {
+                return percentFormatter.format(value) + '%';
+            }
+            return currencyFormatter.format(value);
+        }
+
+        function computeAnnualAggregate(valoresPorMes, meses, formato) {
+            if (!valoresPorMes || !Array.isArray(meses)) {
+                return null;
+            }
+            let total = 0;
+            let count = 0;
+            let hasValue = false;
+            for (const mes of meses) {
+                const valor = valoresPorMes[mes];
+                if (typeof valor !== 'number' || Number.isNaN(valor)) {
+                    continue;
+                }
+                if (formato === 'percent') {
+                    total += valor;
+                    count += 1;
+                } else {
+                    total += valor;
+                    hasValue = true;
+                }
+            }
+            if (formato === 'percent') {
+                return count > 0 ? total / count : null;
+            }
+            return hasValue ? total : null;
+        }
+
+        function formatMillions(value) {
+            if (!Number.isFinite(value)) {
+                return '0';
+            }
+            const abs = Math.abs(value);
+            const decimals = abs >= 10 ? 0 : abs >= 1 ? 1 : 2;
+            const texto = value.toFixed(decimals);
+            return texto.replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+        }
+
+        function renderEerrTable(ficha) {
+            const meses = ficha.months;
+            const monthTypes = ficha.month_types || {};
+            eerrTableHead.innerHTML = '';
+            eerrTableBody.innerHTML = '';
+
+            if (!meses || meses.length === 0) {
+                return;
+            }
+
+            const headerRow = document.createElement('tr');
+            const cuentaTh = document.createElement('th');
+            cuentaTh.textContent = 'Cuenta';
+            headerRow.appendChild(cuentaTh);
+            for (const mes of meses) {
+                const th = document.createElement('th');
+                th.textContent = formatMonthLabel(mes);
+                const scenario = monthTypes[mes] || SCENARIO_REAL;
+                th.dataset.scenario = scenario;
+                if (scenario === SCENARIO_BUDGET) {
+                    th.classList.add('is-budget');
+                }
+                headerRow.appendChild(th);
+            }
+            const totalTh = document.createElement('th');
+            totalTh.textContent = 'Total año';
+            headerRow.appendChild(totalTh);
+            eerrTableHead.appendChild(headerRow);
+
+            const subMetrics = new Set([
+                'Arriendo_fijo',
+                'Arriendo_variable',
+                'Arriendo_fondo_promocion',
+                'Arriendo_GGCC',
+                'Remuneraciones_fijo',
+                'Remuneraciones_comisiones'
+            ]);
+
+            for (const config of metricConfig) {
+                const row = document.createElement('tr');
+                if (subMetrics.has(config.id)) {
+                    row.classList.add('sub-row');
+                }
+                const header = document.createElement('th');
+                header.textContent = config.label;
+                row.appendChild(header);
+                const almacen = ficha.values[config.id] || {};
+                for (const mes of meses) {
+                    const cell = document.createElement('td');
+                    cell.dataset.metric = config.id;
+                    cell.textContent = formatValue(almacen[mes], config.format);
+                    const scenario = monthTypes[mes] || SCENARIO_REAL;
+                    if (scenario === SCENARIO_BUDGET) {
+                        cell.classList.add('is-budget');
+                    }
+                    row.appendChild(cell);
+                }
+                const totalCell = document.createElement('td');
+                totalCell.classList.add('total-cell');
+                totalCell.dataset.metric = config.id;
+                const total = computeAnnualAggregate(almacen, meses, config.format);
+                totalCell.textContent = formatValue(total, config.format);
+                row.appendChild(totalCell);
+                eerrTableBody.appendChild(row);
+            }
+        }
+
+        function computeEbitdaMargin(structure, venta, margenDecimal) {
+            const margenContribucion = venta * margenDecimal;
+            const comisionesVendedores = venta * (structure.tasa_por_vendedor || 0);
+            const comisionesVariables = comisionesVendedores + (venta * (structure.tasa_total_ventas || 0));
+            const costoDotacion = (structure.dotacion_fijo || 0) + comisionesVariables;
+
+            const arriendoBase = Math.max(structure.arriendo_minimo || 0, venta * (structure.arriendo_porcentual || 0));
+            const arriendoVariable = Math.max(0, arriendoBase - (structure.arriendo_minimo || 0));
+            const fondoPromocion = arriendoBase * (structure.fondo_promocion_pct || 0);
+            const arriendoTotal =
+                (structure.arriendo_minimo || 0) +
+                arriendoVariable +
+                fondoPromocion +
+                (structure.arriendo_ggcc || 0);
+
+            const otrosCostos = venta * (structure.otros_costos_rate || 0);
+            const gastoOperacional = costoDotacion + arriendoTotal + otrosCostos;
+            const ebitda = margenContribucion - gastoOperacional;
+
+            if (venta <= 0) {
+                return 0;
+            }
+            return (ebitda / venta) * 100;
+        }
+
+        function colorForValue(valor) {
+            if (!Number.isFinite(valor)) {
+                return { bg: '#f3f4f6', text: '#1f2937' };
+            }
+            if (valor < 0) {
+                return { bg: '#fee2e2', text: '#7f1d1d' };
+            }
+            if (valor <= 5) {
+                return { bg: '#fef3c7', text: '#78350f' };
+            }
+            return { bg: '#dcfce7', text: '#065f46' };
+        }
+
+        function buildRange(min, max, step, limit) {
+            const valores = [];
+            const tienePaso = Number.isFinite(step) && step > 0;
+
+            if (tienePaso) {
+                let actual = min;
+                let contador = 0;
+                const limiteSuperior = max + step / 10;
+                while (actual <= limiteSuperior && contador < 1000) {
+                    valores.push(actual);
+                    actual += step;
+                    contador += 1;
+                }
+            } else if (Number.isFinite(limit) && limit > 1 && max > min) {
+                const cantidad = Math.max(2, Math.floor(limit));
+                for (let i = 0; i < cantidad; i += 1) {
+                    const ratio = cantidad === 1 ? 0 : i / (cantidad - 1);
+                    valores.push(min + (max - min) * ratio);
+                }
+            } else {
+                valores.push(min);
+            }
+
+            if (Number.isFinite(limit) && limit > 0) {
+                const cantidad = Math.max(1, Math.floor(limit));
+                if (valores.length > cantidad) {
+                    valores.length = cantidad;
+                } else if (tienePaso) {
+                    let actual = valores.length ? valores[valores.length - 1] + step : min;
+                    let contador = 0;
+                    while (valores.length < cantidad && contador < 1000) {
+                        if (actual > max && valores[valores.length - 1] !== max) {
+                            valores.push(max);
+                            break;
+                        }
+                        valores.push(actual);
+                        actual += step;
+                        contador += 1;
+                    }
+                    while (valores.length < cantidad) {
+                        valores.push(max);
+                    }
+                } else {
+                    while (valores.length < cantidad) {
+                        valores.push(max);
+                    }
+                }
+            }
+
+            return valores.map((valor) => {
+                if (valor < min) {
+                    return min;
+                }
+                if (valor > max) {
+                    return max;
+                }
+                return valor;
+            });
+        }
+
+        function renderHeatmap(ficha) {
+            heatmapHead.innerHTML = '';
+            heatmapBody.innerHTML = '';
+
+            const contexto = ficha.heatmap || {};
+            const estructura = contexto.structure;
+            const rangos = contexto.range;
+
+            if (!estructura || !rangos) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.textContent = 'Sin información suficiente para simular.';
+                row.appendChild(cell);
+                heatmapHead.appendChild(document.createElement('tr')).appendChild(document.createElement('th')).textContent = 'Simulación';
+                heatmapBody.appendChild(row);
+                return;
+            }
+
+            const pasoVentaIngresado = parseFloat(ventaStepInput.value.replace(/,/g, '.'));
+            const pasoMargenIngresado = parseFloat(margenStepInput.value.replace(/,/g, '.'));
+            const ventaMinIngresada = parseFloat(ventaMinInput.value.replace(/,/g, '.'));
+            const margenMinIngresado = parseFloat(margenMinInput.value.replace(/,/g, '.'));
+
+            let pasoVenta = Number.isFinite(pasoVentaIngresado) && pasoVentaIngresado > 0 ? pasoVentaIngresado * 1_000_000 : rangos.default_sale_step;
+            if (!Number.isFinite(pasoVenta) || pasoVenta <= 0) {
+                pasoVenta = 500_000;
+            }
+            const pasoMargenPct = Number.isFinite(pasoMargenIngresado) && pasoMargenIngresado > 0 ? pasoMargenIngresado : rangos.default_margin_step * 100;
+            const pasoMargen = pasoMargenPct / 100;
+
+            if (!(Number.isFinite(pasoVentaIngresado) && pasoVentaIngresado > 0)) {
+                ventaStepInput.value = formatMillions(pasoVenta / 1_000_000);
+            }
+
+            const ventaMinBase = Number.isFinite(rangos.sales_min) ? Math.max(0, rangos.sales_min) : 0;
+            const ventaMaxBase = Number.isFinite(rangos.sales_max) ? Math.max(ventaMinBase, rangos.sales_max) : null;
+            const ventaInicialRaw = Number.isFinite(ventaMinIngresada) && ventaMinIngresada >= 0 ? ventaMinIngresada * 1_000_000 : null;
+            let ventaInicial = ventaInicialRaw !== null ? ventaInicialRaw : ventaMinBase;
+            if (!Number.isFinite(ventaInicial) || ventaInicial < 0) {
+                ventaInicial = 0;
+            }
+            if (ventaInicialRaw === null && ventaMaxBase !== null) {
+                ventaInicial = Math.min(ventaInicial, ventaMaxBase);
+            }
+            if (ventaInicialRaw === null) {
+                ventaMinInput.value = formatMillions(ventaInicial / 1_000_000);
+            }
+
+            const margenMinBase = Number.isFinite(rangos.margin_min) ? Math.max(0, rangos.margin_min) : 0;
+            const margenMaxBase = Number.isFinite(rangos.margin_max) ? Math.max(margenMinBase, rangos.margin_max) : null;
+            const margenInicialRaw = Number.isFinite(margenMinIngresado) && margenMinIngresado >= 0 ? margenMinIngresado / 100 : null;
+            let margenInicial = margenInicialRaw !== null ? margenInicialRaw : margenMinBase;
+            if (!Number.isFinite(margenInicial) || margenInicial < 0) {
+                margenInicial = 0;
+            }
+            if (margenInicialRaw === null && margenMaxBase !== null) {
+                margenInicial = Math.min(margenInicial, margenMaxBase);
+            }
+            if (margenInicialRaw === null) {
+                margenMinInput.value = (margenInicial * 100).toFixed(1).replace(/\.0+$/, '');
+            } else if (margenMaxBase !== null && margenInicialRaw > margenMaxBase && Math.abs(margenInicialRaw - margenInicial) > 1e-6) {
+                margenMinInput.value = (margenInicial * 100).toFixed(1).replace(/\.0+$/, '');
+            }
+            margenInicial = Math.min(margenInicial, 1);
+
+            const nivelesVentaIngresado = parseInt(ventaLevelsInput.value, 10);
+            const nivelesMargenIngresado = parseInt(margenLevelsInput.value, 10);
+
+            let nivelesVentaDefault = 15;
+            if (Number.isFinite(pasoVenta) && pasoVenta > 0) {
+                const baseMax = ventaMaxBase !== null ? Math.max(ventaMaxBase, ventaInicial + pasoVenta) : ventaInicial + pasoVenta * 9;
+                const rango = Math.max(baseMax - ventaInicial, pasoVenta);
+                nivelesVentaDefault = Math.max(15, Math.min(60, Math.round(rango / pasoVenta) + 1));
+            }
+
+            let nivelesMargenDefault = 20;
+            if (Number.isFinite(pasoMargen) && pasoMargen > 0) {
+                const baseMaxMargen = margenMaxBase !== null ? Math.max(margenMaxBase, margenInicial + pasoMargen) : margenInicial + pasoMargen * 9;
+                const rango = Math.max(baseMaxMargen - margenInicial, pasoMargen);
+                nivelesMargenDefault = Math.max(20, Math.min(80, Math.round(rango / pasoMargen) + 1));
+            }
+
+            const nivelesVenta = Number.isFinite(nivelesVentaIngresado) && nivelesVentaIngresado >= 1 ? nivelesVentaIngresado : nivelesVentaDefault;
+            const nivelesMargen = Number.isFinite(nivelesMargenIngresado) && nivelesMargenIngresado >= 1 ? nivelesMargenIngresado : nivelesMargenDefault;
+
+            if (!(Number.isFinite(nivelesVentaIngresado) && nivelesVentaIngresado >= 1)) {
+                ventaLevelsInput.value = nivelesVenta.toString();
+            }
+            if (!(Number.isFinite(nivelesMargenIngresado) && nivelesMargenIngresado >= 1)) {
+                margenLevelsInput.value = nivelesMargen.toString();
+            }
+
+            const desiredVentaMax = ventaInicial + pasoVenta * Math.max(nivelesVenta - 1, 0);
+            let ventasMax = desiredVentaMax;
+            if (ventaMaxBase !== null) {
+                ventasMax = Math.max(ventasMax, ventaMaxBase);
+            }
+            const desiredMargenMax = margenInicial + pasoMargen * Math.max(nivelesMargen - 1, 0);
+            let margenesMax = desiredMargenMax;
+            if (margenMaxBase !== null) {
+                margenesMax = Math.max(margenesMax, margenMaxBase);
+            }
+            margenesMax = Math.min(margenesMax, 1);
+
+            const ventas = buildRange(ventaInicial, ventasMax, pasoVenta, nivelesVenta);
+            const margenes = buildRange(margenInicial, margenesMax, pasoMargen, nivelesMargen);
+
+            if (ventas.length === 0 || margenes.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.textContent = 'Configura incrementos válidos para generar la tabla.';
+                row.appendChild(cell);
+                heatmapHead.appendChild(document.createElement('tr')).appendChild(document.createElement('th')).textContent = 'Simulación';
+                heatmapBody.appendChild(row);
+                return;
+            }
+
+            const matriz = ventas.map(() => []);
+
+            ventas.forEach((venta, idxVenta) => {
+                margenes.forEach((margen, idxMargen) => {
+                    const margenEbitda = computeEbitdaMargin(estructura, venta, margen);
+                    matriz[idxVenta][idxMargen] = margenEbitda;
+                });
+            });
+
+            const headerRow = document.createElement('tr');
+            const esquina = document.createElement('th');
+            esquina.textContent = 'Venta / Margen';
+            headerRow.appendChild(esquina);
+            margenes.forEach((margen) => {
+                const th = document.createElement('th');
+                th.textContent = percentFormatter.format(margen * 100) + '%';
+                headerRow.appendChild(th);
+            });
+            heatmapHead.appendChild(headerRow);
+
+            ventas.forEach((venta, idxVenta) => {
+                const fila = document.createElement('tr');
+                const encabezado = document.createElement('th');
+                encabezado.textContent = currencyFormatter.format(venta);
+                fila.appendChild(encabezado);
+
+                matriz[idxVenta].forEach((valor) => {
+                    const celda = document.createElement('td');
+                    if (Number.isFinite(valor)) {
+                        const colores = colorForValue(valor);
+                        celda.textContent = percentFormatter.format(valor) + '%';
+                        celda.style.backgroundColor = colores.bg;
+                        celda.style.color = colores.text;
+                    } else {
+                        celda.textContent = '–';
+                        celda.style.backgroundColor = '#f3f4f6';
+                    }
+                    fila.appendChild(celda);
+                });
+                heatmapBody.appendChild(fila);
+            });
+        }
+
+        function renderRentFacts(ficha) {
+            const detalles = ficha.rent_details || {};
+            const threshold = detalles.threshold_clp;
+            const vmmUf = detalles.vmm_uf;
+            const porcentaje = detalles.percent;
+            const fondoPromocion = detalles.fondo_promocion;
+            const dotacionTotal = detalles.dotacion_total;
+            const dotacionDetalle = detalles.dotacion_detalle || {};
+
+            const tieneInfo = (
+                (Number.isFinite(threshold) && threshold > 0) ||
+                (Number.isFinite(vmmUf) && vmmUf > 0) ||
+                (Number.isFinite(porcentaje) && porcentaje > 0) ||
+                (Number.isFinite(fondoPromocion) && fondoPromocion > 0) ||
+                (Number.isFinite(dotacionTotal) && dotacionTotal > 0) ||
+                (Object.keys(dotacionDetalle).length > 0)
+            );
+
+            if (!tieneInfo) {
+                rentFactsCard.classList.add('hidden');
+                factThresholdEl.textContent = '–';
+                factVmmUfEl.textContent = '–';
+                factPercentEl.textContent = '–';
+                factFondoEl.textContent = '–';
+                factDotacionTotalEl.textContent = '–';
+                factDotacionDetalleEl.innerHTML = '';
+                return;
+            }
+
+            if (Number.isFinite(threshold) && threshold > 0) {
+                factThresholdEl.textContent = currencyFormatter.format(threshold);
+            } else {
+                factThresholdEl.textContent = '–';
+            }
+
+            if (Number.isFinite(vmmUf) && vmmUf > 0) {
+                factVmmUfEl.textContent = ufFormatter.format(vmmUf);
+            } else {
+                factVmmUfEl.textContent = '–';
+            }
+
+            if (Number.isFinite(porcentaje) && porcentaje > 0) {
+                factPercentEl.textContent = percentFormatterShort.format(porcentaje * 100) + '%';
+            } else {
+                factPercentEl.textContent = '–';
+            }
+
+            if (Number.isFinite(fondoPromocion) && fondoPromocion > 0) {
+                factFondoEl.textContent = percentFormatterShort.format(fondoPromocion * 100) + '%';
+            } else {
+                factFondoEl.textContent = '–';
+            }
+
+            if (Number.isFinite(dotacionTotal) && dotacionTotal >= 0) {
+                factDotacionTotalEl.textContent = staffFormatter.format(dotacionTotal);
+            } else {
+                factDotacionTotalEl.textContent = '–';
+            }
+
+            const rolesList = Array.isArray(STAFF_ROLES) && STAFF_ROLES.length > 0
+                ? STAFF_ROLES
+                : Object.keys(dotacionDetalle || {}).sort((a, b) => a.localeCompare(b));
+            const entries = rolesList.map((rol) => {
+                const valor = Number(dotacionDetalle[rol] || 0);
+                return [rol, valor];
+            });
+            factDotacionDetalleEl.innerHTML = '';
+            if (entries.length > 0) {
+                for (const [rol, cantidad] of entries) {
+                    const item = document.createElement('li');
+                    item.classList.add('fact-detail-item');
+                    if (!Number.isFinite(cantidad) || cantidad <= 0) {
+                        item.classList.add('is-empty');
+                    }
+
+                    const rolSpan = document.createElement('span');
+                    rolSpan.classList.add('fact-detail-role');
+                    rolSpan.textContent = rol;
+
+                    const cantidadSpan = document.createElement('span');
+                    cantidadSpan.classList.add('fact-detail-count');
+                    cantidadSpan.textContent = staffFormatter.format(Math.max(cantidad, 0));
+
+                    item.appendChild(rolSpan);
+                    item.appendChild(cantidadSpan);
+                    factDotacionDetalleEl.appendChild(item);
+                }
+                factDotacionDetalleEl.classList.remove('hidden');
+            } else {
+                factDotacionDetalleEl.classList.add('hidden');
+            }
+
+            rentFactsCard.classList.remove('hidden');
+        }
+
+        function renderResumen(bannerKey) {
+            resumenHead.innerHTML = '';
+            resumenBody.innerHTML = '';
+
+            if (!bannerKey || !bannerSummary[bannerKey]) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = 'Selecciona un banner para revisar el EBITDA por tienda.';
+                row.appendChild(cell);
+                resumenBody.appendChild(row);
+                return;
+            }
+
+            const info = bannerSummary[bannerKey];
+            const months = info.months;
+            const monthTypes = info.month_types || {};
+            const stores = Object.keys(info.stores || {}).sort((a, b) => a.localeCompare(b));
+
+            const headerRow = document.createElement('tr');
+            const thStore = document.createElement('th');
+            thStore.textContent = 'Tienda';
+            headerRow.appendChild(thStore);
+            months.forEach((mes) => {
+                const th = document.createElement('th');
+                th.textContent = formatMonthLabel(mes);
+                const scenario = monthTypes[mes] || SCENARIO_REAL;
+                th.dataset.scenario = scenario;
+                if (scenario === SCENARIO_BUDGET) {
+                    th.classList.add('is-budget');
+                }
+                headerRow.appendChild(th);
+            });
+            const thTotal = document.createElement('th');
+            thTotal.textContent = 'Total EBITDA';
+            headerRow.appendChild(thTotal);
+            resumenHead.appendChild(headerRow);
+
+            const totalsByMonth = months.map(() => 0);
+            let totalBanner = 0;
+
+            for (const store of stores) {
+                const row = document.createElement('tr');
+                const cellStore = document.createElement('th');
+                cellStore.textContent = store;
+                row.appendChild(cellStore);
+
+                let totalTienda = 0;
+                months.forEach((mes, idx) => {
+                    const valor = info.stores[store][mes] ?? 0;
+                    totalsByMonth[idx] += valor;
+                    totalTienda += valor;
+                    const cell = document.createElement('td');
+                    cell.textContent = currencyFormatter.format(valor);
+                    const scenario = monthTypes[mes] || SCENARIO_REAL;
+                    if (scenario === SCENARIO_BUDGET) {
+                        cell.classList.add('is-budget');
+                    }
+                    row.appendChild(cell);
+                });
+
+                totalBanner += totalTienda;
+                const totalCell = document.createElement('td');
+                totalCell.textContent = currencyFormatter.format(totalTienda);
+                totalCell.classList.add('total-cell');
+                row.appendChild(totalCell);
+                resumenBody.appendChild(row);
+            }
+
+            if (stores.length > 0) {
+                const totalRow = document.createElement('tr');
+                totalRow.classList.add('total-row');
+                const totalLabel = document.createElement('th');
+                totalLabel.textContent = 'Total banner';
+                totalRow.appendChild(totalLabel);
+                months.forEach((_, idx) => {
+                    const cell = document.createElement('td');
+                    cell.textContent = currencyFormatter.format(totalsByMonth[idx]);
+                    cell.classList.add('total-cell');
+                    const mes = months[idx];
+                    const scenario = monthTypes[mes] || SCENARIO_REAL;
+                    if (scenario === SCENARIO_BUDGET) {
+                        cell.classList.add('is-budget');
+                    }
+                    totalRow.appendChild(cell);
+                });
+                const totalBannerCell = document.createElement('td');
+                totalBannerCell.textContent = currencyFormatter.format(totalBanner);
+                totalBannerCell.classList.add('total-cell');
+                totalRow.appendChild(totalBannerCell);
+                resumenBody.appendChild(totalRow);
+            } else {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = Math.max(2, months.length + 2);
+                cell.textContent = 'Sin tiendas asociadas al banner seleccionado.';
+                row.appendChild(cell);
+                resumenBody.appendChild(row);
+            }
+        }
+
+        function handleBannerChange() {
+            const bannerSeleccionado = bannerSelect.value;
+            currentStoreKey = '';
+
+            storeSelect.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = bannerSeleccionado ? 'Selecciona una sucursal…' : 'Selecciona un banner primero…';
+            storeSelect.appendChild(placeholder);
+
+            if (!bannerSeleccionado || !bannerMap[bannerSeleccionado]) {
+                storeSelect.disabled = true;
+                storeSelect.setAttribute('disabled', 'disabled');
+                storeDetails.classList.add('hidden');
+                heatmapCard.classList.add('hidden');
+                rentFactsCard.classList.add('hidden');
+                resumenCard.classList.add('hidden');
+                rentThresholdEl.classList.add('hidden');
+                rentThresholdEl.textContent = '';
+                ventaLevelsInput.value = '15';
+                margenLevelsInput.value = '20';
+                renderResumen(null);
+                return;
+            }
+
+            storeSelect.disabled = false;
+            storeSelect.removeAttribute('disabled');
+            const tiendas = bannerMap[bannerSeleccionado];
+            for (const tienda of tiendas) {
+                const option = document.createElement('option');
+                option.value = tienda;
+                option.textContent = tienda;
+                storeSelect.appendChild(option);
+            }
+
+            storeDetails.classList.add('hidden');
+            heatmapCard.classList.add('hidden');
+            rentFactsCard.classList.add('hidden');
+            ventaLevelsInput.value = '15';
+            margenLevelsInput.value = '20';
+            renderResumen(bannerSeleccionado);
+            resumenCard.classList.remove('hidden');
+        }
+
+        function updateStoreDetails() {
+            const bannerSeleccionado = bannerSelect.value;
+            const seleccionado = storeSelect.value;
+            if (!bannerSeleccionado) {
+                storeDetails.classList.add('hidden');
+                heatmapCard.classList.add('hidden');
+                rentFactsCard.classList.add('hidden');
+                resumenCard.classList.add('hidden');
+                currentStoreKey = '';
+                return;
+            }
+
+            const tiendasDisponibles = bannerMap[bannerSeleccionado] || [];
+            if (!seleccionado || !tiendasDisponibles.includes(seleccionado)) {
+                storeDetails.classList.add('hidden');
+                heatmapCard.classList.add('hidden');
+                rentFactsCard.classList.add('hidden');
+                currentStoreKey = '';
+                return;
+            }
+
+            const ficha = storeData[seleccionado];
+            if (!ficha) {
+                storeDetails.classList.add('hidden');
+                heatmapCard.classList.add('hidden');
+                rentFactsCard.classList.add('hidden');
+                currentStoreKey = '';
+                return;
+            }
+
+            currentStoreKey = seleccionado;
+            ventaLevelsInput.value = '15';
+            margenLevelsInput.value = '20';
+            storeTitle.textContent = seleccionado;
+            if (ficha.banner) {
+                storeBanner.innerHTML = 'Banner: <span class="badge">' + ficha.banner + '</span>';
+            } else {
+                storeBanner.textContent = '';
+            }
+
+            const contexto = ficha.heatmap || {};
+            const rangos = contexto.range || {};
+            const umbralArriendo = contexto.rent_threshold;
+            rentThresholdEl.classList.add('hidden');
+            rentThresholdEl.textContent = '';
+
+            const defaultSaleStep = Number.isFinite(rangos.default_sale_step) && rangos.default_sale_step > 0 ? rangos.default_sale_step : 500_000;
+            ventaStepInput.value = formatMillions(defaultSaleStep / 1_000_000);
+            if (rangos.default_margin_step) {
+                const valor = (rangos.default_margin_step * 100).toFixed(1).replace(/\.0+$/, '');
+                margenStepInput.value = valor;
+            } else {
+                margenStepInput.value = '1';
+            }
+            const defaultSaleMin = Number.isFinite(rangos.sales_min) ? Math.max(0, rangos.sales_min) : 0;
+            ventaMinInput.value = formatMillions(defaultSaleMin / 1_000_000);
+            if (rangos.margin_min !== undefined) {
+                const valor = (rangos.margin_min * 100).toFixed(1).replace(/\.0+$/, '');
+                margenMinInput.value = valor;
+            } else {
+                margenMinInput.value = '0';
+            }
+
+            ventaLevelsInput.value = '15';
+            margenLevelsInput.value = '20';
+
+            renderEerrTable(ficha);
+            renderHeatmap(ficha);
+            renderRentFacts(ficha);
+            storeDetails.classList.remove('hidden');
+            heatmapCard.classList.remove('hidden');
+            resumenCard.classList.remove('hidden');
+            // rentFactsCard visibility handled in renderRentFacts
+        }
+
+        function handleParameterChange() {
+            const bannerSeleccionado = bannerSelect.value;
+            if (!currentStoreKey || !bannerSeleccionado) {
+                return;
+            }
+            const tiendasDisponibles = bannerMap[bannerSeleccionado] || [];
+            if (!tiendasDisponibles.includes(currentStoreKey)) {
+                return;
+            }
+            const ficha = storeData[currentStoreKey];
+            if (ficha) {
+                renderHeatmap(ficha);
+            }
+        }
+
+        if (widthSelect) {
+            widthSelect.addEventListener('change', (event) => {
+                applyContainerWidth(event.target.value);
+            });
+            applyContainerWidth(widthSelect.value || DEFAULT_CONTAINER_WIDTH);
+        } else {
+            applyContainerWidth(DEFAULT_CONTAINER_WIDTH);
+        }
+
+        populateSelectors();
+        renderResumen(null);
+        bannerSelect.addEventListener('change', handleBannerChange);
+        storeSelect.addEventListener('change', updateStoreDetails);
+        ventaMinInput.addEventListener('input', handleParameterChange);
+        ventaStepInput.addEventListener('input', handleParameterChange);
+        ventaLevelsInput.addEventListener('input', handleParameterChange);
+        margenMinInput.addEventListener('input', handleParameterChange);
+        margenStepInput.addEventListener('input', handleParameterChange);
+        margenLevelsInput.addEventListener('input', handleParameterChange);
+    </script>
+    <div class="page-footer">
+        <div class="confidential-card">Confidencial · Uso exclusivo de Yáneken</div>
+    </div>
+</body>
+</html>

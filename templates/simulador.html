@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simulador de EERR</title>
+    <link rel="stylesheet" href="static/css/simulador.css">
+</head>
+<body>
+    <div class="brand-bar">
+        <div class="brand-logo">
+            <img src="images/Logo_Header.png" alt="Yáneken" />
+        </div>
+        <div class="brand-actions">
+            <a class="nav-button secondary" href="EERR_por_tienda.html">EERR real y presupuesto</a>
+            <a class="nav-button primary is-active" href="Simulador_EERR.html">Simulador de EERR</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Simulador de EERR por Tienda</h1>
+        <p class="lead">Ajusta ventas, márgenes y parámetros operacionales para proyectar el resultado mensual.</p>
+
+        <div class="card selection-card">
+            <h2>Selector de Banner / Sucursal</h2>
+            <div class="selection-controls">
+                <div class="selection-row">
+                    <label for="simBannerSelect">Banner</label>
+                    <select id="simBannerSelect">
+                        <option value="">Selecciona un banner…</option>
+                    <option value="Antihuman">Antihuman</option>
+                    <option value="Aufbau">Aufbau</option>
+                    <option value="Bamers">Bamers</option>
+                    <option value="Belsport">Belsport</option>
+                    <option value="Bold">Bold</option>
+                    <option value="Drops">Drops</option>
+                    <option value="Hoka">Hoka</option>
+                    <option value="JOIA">JOIA</option>
+                    <option value="Locker">Locker</option>
+                    <option value="Oakley">Oakley</option>
+                    </select>
+                </div>
+                <div class="selection-row">
+                    <label for="simStoreSelect">Sucursal</label>
+                    <select id="simStoreSelect" disabled>
+                        <option value="">Selecciona un banner primero…</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="resultCard" style="display:none;">
+            <h2>EERR simulado</h2>
+            <p class="helper">Edita las ventas y el margen de contribución directamente en la tabla. El resto de las cuentas se recalculan automáticamente.</p>
+            <div class="scenario-toggle" id="scenarioToggle" style="display:none;">
+                <div class="scenario-toggle__label">Escenario ventas y margen</div>
+                <div class="scenario-toggle__buttons">
+                    <button type="button" class="scenario-btn" data-scenario="Real" aria-pressed="true">Real</button>
+                    <button type="button" class="scenario-btn" data-scenario="Presupuesto" aria-pressed="false">Presupuesto</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="simResultTable" class="results-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" id="parametersCard" style="display:none;">
+            <h2>Parámetros de arriendo y dotación</h2>
+            <div class="parameters-section">
+                <h3>Dotación</h3>
+                <p class="helper">Ajusta la dotación por rol para actualizar las remuneraciones fijas y variables.</p>
+                <div class="dotacion-rows">
+                    <div class="dotacion-row">
+                        <h4>Roles con comisión</h4>
+                        <div class="dotacion-grid" id="simDotacionCommission"></div>
+                    </div>
+                    <div class="dotacion-row">
+                        <h4>Roles sin comisión</h4>
+                        <div class="dotacion-grid" id="simDotacionOthers"></div>
+                    </div>
+                </div>
+                <p class="helper">Dotación total proyectada: <span class="summary-pill"><strong id="simDotacionTotal">0</strong> personas</span></p>
+            </div>
+            <div class="parameters-section">
+                <h3>Arriendo y otros costos</h3>
+                <div class="rent-grid">
+                    <div class="input-group">
+                        <label for="rentVmm">Arriendo mínimo (UF)</label>
+                        <input id="rentVmm" type="text" inputmode="decimal" pattern="[0-9.,]*" />
+                    </div>
+                    <div class="input-group">
+                        <label for="rentPercent">Arriendo variable (%)</label>
+                        <input id="rentPercent" type="number" step="0.01" min="0" />
+                    </div>
+                    <div class="input-group">
+                        <label for="rentFondo">Fondo promoción (%)</label>
+                        <input id="rentFondo" type="number" step="0.01" min="0" />
+                    </div>
+                    <div class="input-group">
+                        <label for="rentGgcc">GGCC (CLP)</label>
+                        <input id="rentGgcc" type="text" inputmode="numeric" pattern="[0-9.]*" />
+                    </div>
+                    <div class="input-group">
+                        <label for="rentUf">UF promedio</label>
+                        <input id="rentUf" type="text" inputmode="decimal" pattern="[0-9.,]*" />
+                    </div>
+                    <div class="input-group">
+                        <label for="othersRate">Otros costos (% sobre venta)</label>
+                        <input id="othersRate" type="number" step="0.01" min="0" />
+                    </div>
+                </div>
+                <p class="helper">Venta que activa el arriendo porcentual: <span class="summary-pill" id="rentThresholdValue">–</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const metricConfig = __METRIC_CONFIG__;
+        const storeConfig = __STORE_CONFIG__;
+        const roleCosts = __ROLE_COSTS__;
+        const STAFF_ROLES = __STAFF_ROLES__;
+        const COMMISSION_ROLES = __COMMISSION_ROLES__;
+        const NON_COMMISSION_ROLES = __NON_COMMISSION_ROLES__;
+        const TOTAL_SALES_COMMISSIONS = __TOTAL_SALES_COMMISSIONS__;
+        const EXCLUDED_COMMISSION_ROLES = __EXCLUDED_COMMISSION_ROLES__;
+        const DEFAULT_UF = __DEFAULT_UF__;
+        const MONTH_LABELS = ['Ene.', 'Feb.', 'Mar.', 'Abr.', 'May.', 'Jun.', 'Jul.', 'Ago.', 'Sep.', 'Oct.', 'Nov.', 'Dic.'];
+
+        const bannerSelect = document.getElementById('simBannerSelect');
+        const storeSelect = document.getElementById('simStoreSelect');
+        const resultCard = document.getElementById('resultCard');
+        const parametersCard = document.getElementById('parametersCard');
+        const resultHead = document.querySelector('#simResultTable thead');
+        const resultBody = document.querySelector('#simResultTable tbody');
+        const dotacionCommissionRow = document.getElementById('simDotacionCommission');
+        const dotacionOthersRow = document.getElementById('simDotacionOthers');
+        const dotacionTotalEl = document.getElementById('simDotacionTotal');
+        const rentVmmInput = document.getElementById('rentVmm');
+        const rentPercentInput = document.getElementById('rentPercent');
+        const rentFondoInput = document.getElementById('rentFondo');
+        const rentGgccInput = document.getElementById('rentGgcc');
+        const rentUfInput = document.getElementById('rentUf');
+        const othersRateInput = document.getElementById('othersRate');
+        const rentThresholdValue = document.getElementById('rentThresholdValue');
+
+        const currencyFormatter = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
+        const percentFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const staffFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const ufFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        const bannerMap = {};
+        for (const [storeKey, config] of Object.entries(storeConfig)) {
+            const banner = config.banner ? String(config.banner) : 'Sin banner';
+            if (!bannerMap[banner]) {
+                bannerMap[banner] = [];
+            }
+            bannerMap[banner].push(storeKey);
+        }
+        for (const stores of Object.values(bannerMap)) {
+            stores.sort((a, b) => a.localeCompare(b));
+        }
+
+        let currentStoreKey = '';
+        let currentMonths = [];
+        let resultRegistry = {};
+
+        const state = {
+            sales: {},
+            margins: {},
+            staff: {},
+            rent: { vmm_uf: 0, percent: 0, fondo_promocion: 0, ggcc: 0, uf_value: DEFAULT_UF },
+            othersRate: 0,
+        };
+
+        function parseNumber(value) {
+            if (typeof value === 'number') {
+                return Number.isFinite(value) ? value : 0;
+            }
+            if (value === null || value === undefined || value === '') {
+                return 0;
+            }
+            let sanitized = String(value).replace(/\s+/g, '');
+            if (sanitized.includes(',')) {
+                sanitized = sanitized.replace(/\./g, '').replace(/,/g, '.');
+            } else {
+                const dotCount = (sanitized.match(/\./g) || []).length;
+                if (dotCount > 1) {
+                    sanitized = sanitized.replace(/\./g, '');
+                }
+            }
+            const numero = Number(sanitized);
+            return Number.isFinite(numero) ? numero : 0;
+        }
+
+        function parseIntegerInput(value) {
+            if (value === null || value === undefined) {
+                return 0;
+            }
+            const digits = String(value).replace(/\D/g, '');
+            if (!digits) {
+                return 0;
+            }
+            return Number(digits);
+        }
+
+        function formatMonthLabel(isoValue) {
+            if (!isoValue) {
+                return '';
+            }
+            const date = new Date(`${isoValue}T00:00:00Z`);
+            const month = date.getUTCMonth();
+            const year = String(date.getUTCFullYear()).slice(-2);
+            return `${MONTH_LABELS[month]} ${year}`;
+        }
+
+        function resetScenario() {
+            currentStoreKey = '';
+            currentMonths = [];
+            state.sales = {};
+            state.margins = {};
+            state.staff = {};
+            state.rent = { vmm_uf: 0, percent: 0, fondo_promocion: 0, ggcc: 0, uf_value: DEFAULT_UF };
+            state.othersRate = 0;
+            resultRegistry = {};
+            resultHead.innerHTML = '';
+            resultBody.innerHTML = '';
+            dotacionCommissionRow.innerHTML = '';
+            dotacionOthersRow.innerHTML = '';
+            dotacionTotalEl.textContent = '0';
+            rentVmmInput.value = '';
+            rentPercentInput.value = '';
+            rentFondoInput.value = '';
+            rentGgccInput.value = '';
+            rentUfInput.value = DEFAULT_UF || '';
+            othersRateInput.value = '';
+            rentThresholdValue.textContent = '–';
+            resultCard.style.display = 'none';
+            parametersCard.style.display = 'none';
+        }
+
+        function updateDotacionTotalDisplay(total) {
+            const value = Math.max(Math.round(total), 0);
+            dotacionTotalEl.textContent = staffFormatter.format(value);
+        }
+
+        function computeAnnualAggregate(valoresPorMes, meses, formato) {
+            if (!valoresPorMes || !Array.isArray(meses)) {
+                return null;
+            }
+            let total = 0;
+            let count = 0;
+            let hasValue = false;
+            for (const mes of meses) {
+                const valor = valoresPorMes[mes];
+                if (typeof valor !== 'number' || Number.isNaN(valor)) {
+                    continue;
+                }
+                if (formato === 'percent') {
+                    total += valor;
+                    count += 1;
+                } else {
+                    total += valor;
+                    hasValue = true;
+                }
+            }
+            if (formato === 'percent') {
+                return count > 0 ? total / count : null;
+            }
+            return hasValue ? total : null;
+        }
+
+        function computeStaffAggregates() {
+            let fijo = 0;
+            let vendedores = 0;
+            let tasaSumada = 0;
+            let tasaTotalVentas = 0;
+            let dotacionTotal = 0;
+
+            for (const rol of STAFF_ROLES) {
+                const cantidad = Number(state.staff[rol] || 0);
+                if (!Number.isFinite(cantidad) || cantidad <= 0) {
+                    continue;
+                }
+                dotacionTotal += cantidad;
+                const metadata = roleCosts[rol] || {};
+                const fijoUnitario = Number(metadata.fixed || 0);
+                const comision = Number(metadata.commission || 0);
+                fijo += cantidad * fijoUnitario;
+
+                if (TOTAL_SALES_COMMISSIONS.includes(rol) && comision > 0) {
+                    const tasa = comision <= 1 ? comision : comision / 100000000;
+                    tasaTotalVentas += cantidad * tasa;
+                    continue;
+                }
+
+                if (EXCLUDED_COMMISSION_ROLES.includes(rol)) {
+                    continue;
+                }
+
+                if (comision > 1) {
+                    fijo += cantidad * comision;
+                } else if (comision > 0) {
+                    vendedores += cantidad;
+                    tasaSumada += cantidad * comision;
+                }
+            }
+
+            return { fijo, vendedores, tasaSumada, tasaTotalVentas, dotacionTotal };
+        }
+
+        function buildResultTableStructure(config) {
+            resultRegistry = {};
+            resultHead.innerHTML = '';
+            resultBody.innerHTML = '';
+            currentMonths = config.months.slice();
+
+            const headerRow = document.createElement('tr');
+            const cuentaTh = document.createElement('th');
+            cuentaTh.textContent = 'Cuenta';
+            headerRow.appendChild(cuentaTh);
+            for (const mes of currentMonths) {
+                const th = document.createElement('th');
+                th.textContent = formatMonthLabel(mes);
+                headerRow.appendChild(th);
+            }
+            const totalTh = document.createElement('th');
+            totalTh.textContent = 'Total año';
+            headerRow.appendChild(totalTh);
+            resultHead.appendChild(headerRow);
+
+            state.sales = {};
+            state.margins = {};
+
+            const subMetrics = new Set([
+                'Arriendo_fijo',
+                'Arriendo_variable',
+                'Arriendo_fondo_promocion',
+                'Arriendo_GGCC',
+                'Remuneraciones_fijo',
+                'Remuneraciones_comisiones'
+            ]);
+
+            for (const configEntry of metricConfig) {
+                const row = document.createElement('tr');
+                if (subMetrics.has(configEntry.id)) {
+                    row.classList.add('sub-row');
+                }
+                const header = document.createElement('th');
+                header.textContent = configEntry.label;
+                row.appendChild(header);
+
+                const cells = {};
+                for (const mes of currentMonths) {
+                    const cell = document.createElement('td');
+                    cell.dataset.metric = configEntry.id;
+                    if (configEntry.id === 'Venta') {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.inputMode = 'numeric';
+                        input.pattern = '[0-9]*';
+                        const baseValue = config.sales[mes];
+                        if (baseValue !== null && baseValue !== undefined) {
+                            const numeric = Math.max(Math.round(Number(baseValue) || 0), 0);
+                            state.sales[mes] = numeric;
+                            input.value = numeric ? currencyFormatter.format(numeric) : '';
+                        } else {
+                            state.sales[mes] = 0;
+                            input.value = '';
+                        }
+                        input.addEventListener('input', (event) => {
+                            const value = parseIntegerInput(event.target.value);
+                            state.sales[mes] = value;
+                            event.target.value = value ? currencyFormatter.format(value) : '';
+                            if (typeof event.target.setSelectionRange === 'function') {
+                                const length = event.target.value.length;
+                                event.target.setSelectionRange(length, length);
+                            }
+                            recompute();
+                        });
+                        input.addEventListener('blur', (event) => {
+                            const value = parseIntegerInput(event.target.value);
+                            state.sales[mes] = value;
+                            event.target.value = value ? currencyFormatter.format(value) : '';
+                        });
+                        cell.appendChild(input);
+                        cells[mes] = { type: 'input', input };
+                    } else if (configEntry.id === 'Margen_contribucion') {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.step = '0.1';
+                        input.min = '0';
+                        const baseValue = config.margins[mes];
+                        if (baseValue !== null && baseValue !== undefined) {
+                            const numeric = Math.max(Number(baseValue) || 0, 0);
+                            state.margins[mes] = numeric;
+                            input.value = numeric.toFixed(1).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+                        } else {
+                            state.margins[mes] = 0;
+                            input.value = '';
+                        }
+                        input.addEventListener('input', (event) => {
+                            const value = Math.max(parseNumber(event.target.value), 0);
+                            state.margins[mes] = value;
+                            recompute();
+                        });
+                        cell.appendChild(input);
+                        cells[mes] = { type: 'input', input };
+                    } else {
+                        const span = document.createElement('span');
+                        span.textContent = '–';
+                        cell.appendChild(span);
+                        cells[mes] = { type: 'display', element: span };
+                    }
+                    row.appendChild(cell);
+                }
+                const totalCell = document.createElement('td');
+                totalCell.classList.add('total-cell');
+                totalCell.dataset.metric = configEntry.id;
+                totalCell.textContent = '–';
+                row.appendChild(totalCell);
+                resultBody.appendChild(row);
+
+                resultRegistry[configEntry.id] = {
+                    format: configEntry.format,
+                    editable: configEntry.id === 'Venta' || configEntry.id === 'Margen_contribucion',
+                    cells,
+                    totalCell,
+                };
+            }
+        }
+
+        function buildStaffGrid(config) {
+            dotacionCommissionRow.innerHTML = '';
+            dotacionOthersRow.innerHTML = '';
+            state.staff = {};
+            let dotacionTotal = 0;
+
+            const renderCard = (container, rol) => {
+                const cantidadBase = Number(config.staff[rol] || 0);
+                const cantidad = Math.max(Math.round(cantidadBase), 0);
+                state.staff[rol] = cantidad;
+                dotacionTotal += cantidad;
+
+                const card = document.createElement('div');
+                card.classList.add('dotacion-card');
+                if (cantidad <= 0) {
+                    card.classList.add('is-empty');
+                }
+
+                const label = document.createElement('label');
+                label.textContent = rol;
+                card.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.step = '1';
+                input.min = '0';
+                input.inputMode = 'numeric';
+                input.pattern = '[0-9]*';
+                input.value = cantidad;
+                input.addEventListener('input', (event) => {
+                    const value = Math.max(Math.round(parseNumber(event.target.value)), 0);
+                    event.target.value = value;
+                    state.staff[rol] = value;
+                    if (value <= 0) {
+                        card.classList.add('is-empty');
+                    } else {
+                        card.classList.remove('is-empty');
+                    }
+                    recompute();
+                });
+                card.appendChild(input);
+
+                const metadata = roleCosts[rol] || {};
+                const fijo = currencyFormatter.format(metadata.fixed || 0);
+                const parts = [`Costo fijo base: ${fijo}`];
+                if (metadata.commission) {
+                    if (metadata.commission > 1) {
+                        parts.push(`Variable: ${currencyFormatter.format(metadata.commission)} por persona`);
+                    } else {
+                        const porcentaje = (metadata.commission * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+                        parts.push(`Variable: ${porcentaje}% sobre ventas`);
+                    }
+                }
+                const helper = document.createElement('small');
+                helper.textContent = parts.join(' · ');
+                card.appendChild(helper);
+
+                container.appendChild(card);
+            };
+
+            const appendPlaceholders = (container) => {
+                const needed = Math.max(0, 5 - container.children.length);
+                for (let i = 0; i < needed; i += 1) {
+                    const placeholder = document.createElement('div');
+                    placeholder.classList.add('dotacion-card', 'placeholder');
+                    container.appendChild(placeholder);
+                }
+            };
+
+            for (const rol of COMMISSION_ROLES) {
+                renderCard(dotacionCommissionRow, rol);
+            }
+            appendPlaceholders(dotacionCommissionRow);
+
+            for (const rol of NON_COMMISSION_ROLES) {
+                renderCard(dotacionOthersRow, rol);
+            }
+            appendPlaceholders(dotacionOthersRow);
+
+            for (const rol of STAFF_ROLES) {
+                if (state.staff[rol] === undefined) {
+                    state.staff[rol] = 0;
+                }
+            }
+
+            updateDotacionTotalDisplay(dotacionTotal);
+        }
+
+        function buildRentInputs(config) {
+            state.rent = {
+                vmm_uf: Math.max(Number(config.rent.vmm_uf || 0), 0),
+                percent: Math.max(Number(config.rent.percent || 0), 0),
+                fondo_promocion: Math.max(Number(config.rent.fondo_promocion || 0), 0),
+                ggcc: Math.max(Number(config.rent.ggcc || 0), 0),
+                uf_value: Math.max(Number(config.rent.uf_value || DEFAULT_UF || 0), 0),
+            };
+            state.othersRate = Math.max(Number(config.others_rate || 0), 0);
+
+            rentVmmInput.value = state.rent.vmm_uf ? currencyFormatter.format(state.rent.vmm_uf) : '';
+            rentPercentInput.value = state.rent.percent ? (state.rent.percent * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+            rentFondoInput.value = state.rent.fondo_promocion ? (state.rent.fondo_promocion * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+            rentGgccInput.value = state.rent.ggcc ? currencyFormatter.format(state.rent.ggcc) : '';
+            rentUfInput.value = state.rent.uf_value ? ufFormatter.format(state.rent.uf_value) : '';
+            othersRateInput.value = state.othersRate ? (state.othersRate * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+        }
+
+        function updateResultTable(resultados) {
+            for (const configEntry of metricConfig) {
+                const registry = resultRegistry[configEntry.id];
+                if (!registry) {
+                    continue;
+                }
+                const valores = resultados[configEntry.id] || {};
+                if (!registry.editable) {
+                    for (const mes of currentMonths) {
+                        const entry = registry.cells[mes];
+                        if (!entry) {
+                            continue;
+                        }
+                        const valor = valores[mes];
+                        if (valor === null || valor === undefined || Number.isNaN(valor)) {
+                            entry.element.textContent = '–';
+                        } else if (registry.format === 'percent') {
+                            entry.element.textContent = percentFormatter.format(valor) + '%';
+                        } else {
+                            entry.element.textContent = currencyFormatter.format(valor);
+                        }
+                    }
+                }
+                const total = computeAnnualAggregate(valores, currentMonths, registry.format);
+                if (total === null || total === undefined || Number.isNaN(total)) {
+                    registry.totalCell.textContent = '–';
+                } else if (registry.format === 'percent') {
+                    registry.totalCell.textContent = percentFormatter.format(total) + '%';
+                } else {
+                    registry.totalCell.textContent = currencyFormatter.format(total);
+                }
+            }
+        }
+
+        function recompute() {
+            if (!currentStoreKey || !currentMonths.length) {
+                return;
+            }
+            const staffAgg = computeStaffAggregates();
+            updateDotacionTotalDisplay(staffAgg.dotacionTotal);
+
+            let threshold = null;
+            if (state.rent.percent > 0) {
+                threshold = (state.rent.vmm_uf * state.rent.uf_value) / state.rent.percent;
+            }
+            rentThresholdValue.textContent = threshold && threshold > 0
+                ? currencyFormatter.format(threshold)
+                : '–';
+
+            const resultados = {};
+            for (const configEntry of metricConfig) {
+                resultados[configEntry.id] = {};
+            }
+
+            for (const mes of currentMonths) {
+                const venta = Math.max(Number(state.sales[mes] || 0), 0);
+                const margenPct = Math.max(Number(state.margins[mes] || 0), 0);
+                const margenDecimal = margenPct / 100;
+
+                const contribucion = venta * margenDecimal;
+                const costoVenta = venta - contribucion;
+
+                const arriendoMinimoClp = state.rent.vmm_uf * state.rent.uf_value;
+                const montoPorcentual = venta * state.rent.percent;
+                const arriendoBase = Math.max(arriendoMinimoClp, montoPorcentual);
+                const arriendoVariable = Math.max(arriendoBase - arriendoMinimoClp, 0);
+                const arriendoFijo = arriendoBase - arriendoVariable;
+                const arriendoFondoPromocion = arriendoBase * state.rent.fondo_promocion;
+                const arriendoTotal = arriendoBase + arriendoFondoPromocion + state.rent.ggcc;
+
+                let comisionesVariables = 0;
+                if (staffAgg.vendedores > 0 && venta > 0 && staffAgg.tasaSumada > 0) {
+                    comisionesVariables += (venta / staffAgg.vendedores) * staffAgg.tasaSumada;
+                }
+                if (staffAgg.tasaTotalVentas > 0 && venta > 0) {
+                    comisionesVariables += venta * staffAgg.tasaTotalVentas;
+                }
+
+                const costoDotacion = staffAgg.fijo + comisionesVariables;
+                const otrosCostos = venta * state.othersRate;
+                const gastoOperacional = costoDotacion + arriendoTotal + otrosCostos;
+                const ebitda = contribucion - gastoOperacional;
+                const margenEbitda = venta > 0 ? (ebitda / venta) * 100 : 0;
+
+                resultados['Venta'][mes] = venta;
+                resultados['Costo_de_venta'][mes] = costoVenta;
+                resultados['Contribucion'][mes] = contribucion;
+                resultados['Margen_contribucion'][mes] = margenPct;
+                resultados['Arriendo_fijo'][mes] = arriendoFijo;
+                resultados['Arriendo_variable'][mes] = arriendoVariable;
+                resultados['Arriendo_fondo_promocion'][mes] = arriendoFondoPromocion;
+                resultados['Arriendo_GGCC'][mes] = state.rent.ggcc;
+                resultados['Arriendo_total'][mes] = arriendoTotal;
+                resultados['Remuneraciones_fijo'][mes] = staffAgg.fijo;
+                resultados['Remuneraciones_comisiones'][mes] = comisionesVariables;
+                resultados['Remuneraciones_total'][mes] = costoDotacion;
+                resultados['Otros_costos'][mes] = otrosCostos;
+                resultados['Gastos_operacionales'][mes] = gastoOperacional;
+                resultados['EBITDA'][mes] = ebitda;
+                resultados['Margen_EBITDA'][mes] = margenEbitda;
+            }
+
+            updateResultTable(resultados);
+        }
+
+        function loadStore(storeKey) {
+            const config = storeConfig[storeKey];
+            if (!config) {
+                resetScenario();
+                return;
+            }
+
+            currentStoreKey = storeKey;
+            resultCard.style.display = '';
+            parametersCard.style.display = '';
+
+            buildResultTableStructure(config);
+            buildStaffGrid(config);
+            buildRentInputs(config);
+            recompute();
+        }
+
+        rentVmmInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.vmm_uf = value;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        rentVmmInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.vmm_uf = value;
+            event.target.value = value ? ufFormatter.format(value) : '';
+        });
+        rentPercentInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.percent = value / 100;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        rentPercentInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.percent = value / 100;
+            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+        });
+        rentFondoInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.fondo_promocion = value / 100;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        rentFondoInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.fondo_promocion = value / 100;
+            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+        });
+        rentGgccInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.ggcc = value;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        rentGgccInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.ggcc = value;
+            event.target.value = value ? currencyFormatter.format(value) : '';
+        });
+        rentUfInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.uf_value = value;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        rentUfInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.rent.uf_value = value;
+            event.target.value = value ? ufFormatter.format(value) : '';
+        });
+        othersRateInput.addEventListener('input', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.othersRate = value / 100;
+            if (!currentStoreKey) {
+                return;
+            }
+            recompute();
+        });
+        othersRateInput.addEventListener('blur', (event) => {
+            const value = Math.max(parseNumber(event.target.value), 0);
+            state.othersRate = value / 100;
+            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
+        });
+
+        function populateSelectors() {
+            bannerSelect.innerHTML = '';
+            const bannerPlaceholder = document.createElement('option');
+            bannerPlaceholder.value = '';
+            bannerPlaceholder.textContent = 'Selecciona un banner…';
+            bannerSelect.appendChild(bannerPlaceholder);
+
+            const banners = Object.keys(bannerMap).sort((a, b) => a.localeCompare(b));
+            for (const banner of banners) {
+                const option = document.createElement('option');
+                option.value = banner;
+                option.textContent = banner;
+                bannerSelect.appendChild(option);
+            }
+
+            resetScenario();
+        }
+
+        function handleBannerChange() {
+            const banner = bannerSelect.value;
+            storeSelect.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = banner ? 'Selecciona una sucursal…' : 'Selecciona un banner primero…';
+            storeSelect.appendChild(placeholder);
+
+            if (!banner || !bannerMap[banner]) {
+                storeSelect.disabled = true;
+                storeSelect.setAttribute('disabled', 'disabled');
+                resetScenario();
+                return;
+            }
+
+            storeSelect.disabled = false;
+            storeSelect.removeAttribute('disabled');
+            for (const storeKey of bannerMap[banner]) {
+                const option = document.createElement('option');
+                option.value = storeKey;
+                option.textContent = storeKey;
+                storeSelect.appendChild(option);
+            }
+            storeSelect.value = '';
+            resetScenario();
+        }
+
+        function handleStoreChange() {
+            const storeKey = storeSelect.value;
+            if (!storeKey) {
+                resetScenario();
+                return;
+            }
+            loadStore(storeKey);
+        }
+
+        bannerSelect.addEventListener('change', handleBannerChange);
+        storeSelect.addEventListener('change', handleStoreChange);
+
+        populateSelectors();
+    </script>
+    <div class="page-footer">
+        <div class="confidential-card">Confidencial · Uso exclusivo de Yáneken</div>
+    </div>
+</body>
+</html>
