@@ -31,6 +31,7 @@ COPY src/ ./src/
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY config/ ./config/
+COPY scripts/ ./scripts/
 
 # Instalar dependencias Python (después de copiar el código)
 RUN pip install --upgrade pip setuptools wheel && \
@@ -47,8 +48,8 @@ USER ynk
 EXPOSE 8000
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')" || exit 1
+#HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+#    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')" || exit 1
 
 # Comando por defecto (puede ser sobrescrito)
 CMD ["python3", "-m", "ynk_modelo.cli.flask_server", "--host", "0.0.0.0", "--port", "8000"]
