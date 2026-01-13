@@ -1,0 +1,16 @@
+name: Deploy YNK Modelo (Prod)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy on server
+        run: |
+          cd /opt/ynk-modelo
+          ./deploy.sh
