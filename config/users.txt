@@ -1,0 +1,19 @@
+# Archivo de configuración de usuarios
+# IMPORTANTE: En producción, usar base de datos con contraseñas hasheadas
+
+# Formato:
+# usuario:contraseña:nombre_completo:rol
+
+admin:ynk2025:Administrador:admin
+viewer:viewer2025:Visualizador:viewer
+pedrotorres:torres2025:Pedro Torres:admin
+
+# INSTRUCCIONES:
+# 1. Cada línea representa un usuario
+# 2. Los campos están separados por dos puntos (:)
+# 3. Roles disponibles: admin, viewer
+# 4. NO subir este archivo a Git en producción
+# 5. Considerar usar variables de entorno o base de datos para producción
+
+# Para añadir más usuarios, copia el formato:
+# nuevo_usuario:contraseña_segura:Nombre Completo:rol

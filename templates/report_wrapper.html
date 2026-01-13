@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block title %}EERR por tienda{% if active_page ==
+'simulator' %} - Simulador{% endif %}{% endblock %} {% block styles %} {#
+Sobrescribir completamente el bloque styles - NO incluir simulador.css por
+defecto desde base.html #} {% if active_page == 'eerr' %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('serve_static', filename='css/eerr_report.css') }}"
+/>
+{% elif active_page == 'simulator' %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('serve_static', filename='css/simulador.css') }}"
+/>
+{% else %} {# Para otras páginas, usar simulador.css por defecto #}
+<link
+  rel="stylesheet"
+  href="{{ url_for('serve_static', filename='css/simulador.css') }}"
+/>
+{% endif %} {% endblock %} {% block container_wrapper %} {# El html_content ya
+incluye su propio
+<div class="container">
+  y los scripts #} {{ html_content|safe }} {% endblock %} {% block scripts %} {{
+  super() }} {# Incluir los scripts del HTML generado #} {% if html_scripts %}
+  {{ html_scripts|safe }} {% endif %} {% endblock %}
+</div>

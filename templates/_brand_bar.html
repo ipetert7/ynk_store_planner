@@ -1,0 +1,28 @@
+{# Componente reutilizable del brand-bar #}
+<div class="brand-bar">
+    <div class="brand-logo">
+        <img src="{{ url_for('serve_static', filename='images/ynk-logo.svg') }}" alt="Yáneken" />
+    </div>
+    <div class="brand-actions">
+        {% if has_access_eerr_report|default(false) %}
+        <a class="nav-button secondary {% if active_page == 'eerr' %}is-active{% endif %}" href="/EERR_por_tienda.html">EERR real y presupuesto</a>
+        {% endif %}
+        {% if has_access_simulator|default(false) %}
+        <a class="nav-button secondary {% if active_page == 'simulator' %}is-active{% endif %}" href="/Simulador_EERR.html">Simulador de EERR</a>
+        {% endif %}
+        {% if has_access_admin_users|default(false) %}
+        <div class="admin-dropdown" id="adminDropdown">
+            <a href="{{ url_for('admin_users') }}" class="nav-button secondary {% if active_page and active_page.startswith('admin') %}is-active{% endif %}">
+                Administración
+                <span class="dropdown-arrow">▼</span>
+            </a>
+            <div class="dropdown-menu">
+                <a href="{{ url_for('admin_users') }}" class="dropdown-item {% if active_page == 'admin_users' %}is-active{% endif %}">👥 Gestión de Usuarios</a>
+                <a href="{{ url_for('admin_roles') }}" class="dropdown-item {% if active_page == 'admin_roles' %}is-active{% endif %}">🔐 Gestión de Roles</a>
+                <a href="{{ url_for('admin_permissions') }}" class="dropdown-item {% if active_page == 'admin_permissions' %}is-active{% endif %}">🛡️ Gestión de Permisos</a>
+            </div>
+        </div>
+        {% endif %}
+        <a class="nav-button logout" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+    </div>
+</div>

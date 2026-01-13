@@ -59,7 +59,16 @@ def generate_reports(estado_path: Path, simulador_path: Path) -> tuple[pd.DataFr
         estado_path,
     )
 
-    base_df, _, uf_vigente = build_store_base()
+    base_df, _, uf_por_mes_map, uf_vigente = build_store_base()
+    uf_por_mes_str: dict[str, float] = {}
+    for clave, valor in uf_por_mes_map.items():
+        try:
+            mes_dt = pd.to_datetime(clave)
+        except (TypeError, ValueError):
+            continue
+        if pd.isna(valor):
+            continue
+        uf_por_mes_str[mes_dt.strftime("%Y-%m")] = float(valor)
     role_costs = get_role_cost_metadata()
     staff_roles = sorted({*ROLE_MAP.values(), *role_costs.keys()})
     total_sales_commissions = sorted(TOTAL_SALES_COMMISSIONS)
@@ -72,6 +81,7 @@ def generate_reports(estado_path: Path, simulador_path: Path) -> tuple[pd.DataFr
         total_sales_commissions,
         excluded_roles,
         staff_roles,
+        uf_por_mes_str,
         uf_vigente,
         simulador_path,
     )

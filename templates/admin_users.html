@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios - YNK Modelo{% endblock %}
+
+{% block extra_styles %}
+<style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+
+      .header {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 20px 30px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e5e5e5;
+      }
+
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #171717;
+      }
+
+      .btn {
+        padding: 11px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: #171717;
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background: #262626;
+      }
+
+      .btn-secondary {
+        background: #ffffff;
+        color: #171717;
+        border: 1px solid #d4d4d4;
+      }
+
+      .btn-secondary:hover {
+        background: #fafafa;
+      }
+
+      .btn-danger {
+        background: #dc2626;
+        color: #ffffff;
+      }
+
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e5e5;
+        overflow: hidden;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .table th {
+        background: #fafafa;
+        font-weight: 600;
+        font-size: 13px;
+        color: #171717 !important;
+      }
+
+      .table td {
+        font-size: 14px;
+        color: #525252;
+      }
+
+      .table tr:hover {
+        background: #fafafa;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 12px;
+        margin-right: 6px;
+      }
+
+      .badge-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .badge-role {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .nav-links {
+        margin-bottom: 20px;
+      }
+
+      .nav-links a {
+        color: #525252;
+        text-decoration: none;
+        font-size: 14px;
+        margin-right: 16px;
+      }
+
+      .nav-links a:hover {
+        color: #171717;
+      }
+
+      .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #737373;
+      }
+
+      .empty-state p {
+        margin-top: 10px;
+        font-size: 14px;
+      }
+    </style>
+{% endblock %}
+
+{% block container_wrapper %}
+    <div class="container" style="padding: 20px;">
+      <div class="header">
+        <h1>Gestión de Usuarios</h1>
+        <a
+          href="{{ url_for('admin_users_create') }}"
+          class="btn btn-primary"
+          >+ Nuevo Usuario</a
+        >
+      </div>
+
+      <div class="nav-links">
+        <a href="{{ url_for('dashboard') }}">← Volver al Dashboard</a>
+      </div>
+
+      <div class="card">
+        {% if users_with_roles %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre Completo</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in users_with_roles %}
+            <tr>
+              <td><strong>{{ item.user.username }}</strong></td>
+              <td>{{ item.user.full_name }}</td>
+              <td>{{ item.user.email or '-' }}</td>
+              <td>
+                {% for role in item.roles %}
+                <span class="badge badge-role">{{ role }}</span>
+                {% endfor %} {% if not item.roles %}
+                <span style="color: #a3a3a3; font-size: 13px">Sin roles</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item.user.is_active %}
+                <span class="badge badge-active">Activo</span>
+                {% else %}
+                <span class="badge badge-inactive">Inactivo</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="actions">
+                  <a
+                    href="{{ url_for('admin_users_edit', user_id=item.user.id) }}"
+                    class="btn btn-secondary btn-sm"
+                    >Editar</a
+                  >
+                  {% if item.user.id != current_user.id %}
+                  <button
+                    onclick="deleteUser({{ item.user.id }}, '{{ item.user.username }}')"
+                    class="btn btn-danger btn-sm"
+                  >
+                    Eliminar
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+          <p>No hay usuarios registrados</p>
+          <a
+            href="{{ url_for('admin_users_create') }}"
+            class="btn btn-primary"
+            style="margin-top: 20px"
+            >Crear Primer Usuario</a
+          >
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+      function deleteUser(userId, username) {
+        if (
+          confirm(
+            `¿Estás seguro de que deseas eliminar al usuario "${username}"?`
+          )
+        ) {
+          fetch(`/admin/users/${userId}/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                location.reload();
+              } else {
+                alert(
+                  'Error: ' + (data.error || 'No se pudo eliminar el usuario')
+                );
+              }
+            })
+            .catch((error) => {
+              alert('Error al eliminar usuario');
+              console.error('Error:', error);
+            });
+        }
+      }
+    </script>
+    </div>
+{% endblock %}

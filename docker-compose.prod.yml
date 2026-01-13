@@ -1,0 +1,21 @@
+version: '3.8'
+
+# Configuración para producción (Rocky Linux 8.9)
+# Uso: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  ynk-modelo:
+    environment:
+      - ENVIRONMENT=prod
+      - AUTO_REGENERATE=true
+      - CHECK_INTERVAL=300
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # En producción, considera usar un proxy reverso (nginx)
+    # y exponer solo en localhost
+    ports:
+      - "127.0.0.1:${PORT:-8000}:8000"

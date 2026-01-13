@@ -1,0 +1,43 @@
+  version: '3.8'
+
+services:
+  ynk-modelo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ynk-modelo
+    image: ynk-modelo:latest
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-local}
+      - PORT=${PORT:-8000}
+      - SECRET_KEY=${SECRET_KEY:-ynk-dev-secret-key-change-in-production}
+      - AUTO_REGENERATE=${AUTO_REGENERATE:-true}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-300}
+      - LOG_DIR=/app/logs
+    volumes:
+      # Montar datos de entrada (Excel) - rw para permitir escritura en BD
+      - ./data:/app/data
+      # Montar salida (HTML generados)
+      - ./output:/app/output
+      # Montar logs
+      - ./logs:/app/logs
+      # Montar configuración de usuarios (opcional)
+      - ./config:/app/config:ro
+      # Montar templates y static para desarrollo (cambios se reflejan inmediatamente)
+      - ./templates:/app/templates
+      - ./static:/app/static
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ynk-network
+
+networks:
+  ynk-network:
+    driver: bridge

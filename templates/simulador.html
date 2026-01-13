@@ -1,804 +1,3656 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
     <title>Simulador de EERR</title>
-    <link rel="stylesheet" href="static/css/simulador.css">
-</head>
-<body>
-    <div class="brand-bar">
-        <div class="brand-logo">
-            <img src="images/Logo_Header.png" alt="Yáneken" />
-        </div>
-        <div class="brand-actions">
-            <a class="nav-button secondary" href="EERR_por_tienda.html">EERR real y presupuesto</a>
-            <a class="nav-button primary is-active" href="Simulador_EERR.html">Simulador de EERR</a>
-        </div>
-    </div>
+    {# El CSS se carga desde report_wrapper.html, no desde aquí #}
+  </head>
+  <body>
     <div class="container">
-        <h1>Simulador de EERR por Tienda</h1>
-        <p class="lead">Ajusta ventas, márgenes y parámetros operacionales para proyectar el resultado mensual.</p>
+      <h1>Simulador de EERR por Tienda</h1>
+      <p class="lead">
+        Ajusta ventas, márgenes y parámetros operacionales para proyectar el
+        resultado mensual.
+      </p>
 
-        <div class="card selection-card">
-            <h2>Selector de Banner / Sucursal</h2>
-            <div class="selection-controls">
-                <div class="selection-row">
-                    <label for="simBannerSelect">Banner</label>
-                    <select id="simBannerSelect">
-                        <option value="">Selecciona un banner…</option>
-                    <option value="Antihuman">Antihuman</option>
-                    <option value="Aufbau">Aufbau</option>
-                    <option value="Bamers">Bamers</option>
-                    <option value="Belsport">Belsport</option>
-                    <option value="Bold">Bold</option>
-                    <option value="Drops">Drops</option>
-                    <option value="Hoka">Hoka</option>
-                    <option value="JOIA">JOIA</option>
-                    <option value="Locker">Locker</option>
-                    <option value="Oakley">Oakley</option>
-                    </select>
-                </div>
-                <div class="selection-row">
-                    <label for="simStoreSelect">Sucursal</label>
-                    <select id="simStoreSelect" disabled>
-                        <option value="">Selecciona un banner primero…</option>
-                    </select>
-                </div>
+      <div class="card selection-card">
+        <h2>Selector de Banner / Sucursal</h2>
+        <div class="selection-controls">
+          <div class="selection-row">
+            <label for="simYearSelect">Año</label>
+            <select id="simYearSelect">
+              <option value="">Selecciona un año…</option>
+            </select>
+          </div>
+          <div class="selection-row">
+            <label for="simBannerSelect">Banner</label>
+            <select id="simBannerSelect">
+              <option value="">Selecciona un banner…</option>
+              <option value="Antihuman">Antihuman</option>
+              <option value="Aufbau">Aufbau</option>
+              <option value="Bamers">Bamers</option>
+              <option value="Belsport">Belsport</option>
+              <option value="Bold">Bold</option>
+              <option value="Drops">Drops</option>
+              <option value="Hoka">Hoka</option>
+              <option value="JOIA">JOIA</option>
+              <option value="Locker">Locker</option>
+              <option value="Oakley">Oakley</option>
+            </select>
+          </div>
+          <div class="selection-row">
+            <label for="simStoreSelect">Sucursal</label>
+            <select
+              id="simStoreSelect"
+              disabled
+            >
+              <option value="">Selecciona un banner primero…</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="simulation-layout"
+        id="simulationLayout"
+      >
+        <div
+          class="card"
+          id="resultCard"
+          style="display: none"
+        >
+          <h2>EERR simulado</h2>
+          <p class="helper">
+            Edita las ventas y el margen de contribución directamente en la
+            tabla. El resto de las cuentas se recalculan automáticamente.
+          </p>
+          <div
+            class="scenario-toggle"
+            id="scenarioToggle"
+            style="display: none"
+          >
+            <div class="scenario-toggle__label">Escenario ventas y margen</div>
+            <div class="scenario-toggle__buttons">
+              <button
+                type="button"
+                class="scenario-btn"
+                data-scenario="Real"
+                aria-pressed="true"
+              >
+                Real
+              </button>
+              <button
+                type="button"
+                class="scenario-btn"
+                data-scenario="Presupuesto"
+                aria-pressed="false"
+              >
+                Presupuesto
+              </button>
             </div>
+          </div>
+          <div
+            class="scenario-toggle"
+            id="periodToggle"
+            style="display: none"
+          >
+            <div class="scenario-toggle__label">Período a simular</div>
+            <div
+              class="scenario-toggle__buttons"
+              role="group"
+            >
+              <button
+                type="button"
+                class="scenario-btn"
+                data-period="year"
+                aria-pressed="true"
+              >
+                Año completo
+              </button>
+              <button
+                type="button"
+                class="scenario-btn"
+                data-period="month"
+                aria-pressed="false"
+              >
+                Escenarios
+              </button>
+            </div>
+            <div
+              class="scenario-toggle__select"
+              id="monthSelectWrapper"
+              style="display: none"
+            >
+              <label for="simMonthSelect">Mes</label>
+              <select
+                id="simMonthSelect"
+                disabled
+              >
+                <option value="">Selecciona una sucursal…</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table
+              id="simResultTable"
+              class="results-table"
+            >
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="card" id="resultCard" style="display:none;">
-            <h2>EERR simulado</h2>
-            <p class="helper">Edita las ventas y el margen de contribución directamente en la tabla. El resto de las cuentas se recalculan automáticamente.</p>
-            <div class="scenario-toggle" id="scenarioToggle" style="display:none;">
-                <div class="scenario-toggle__label">Escenario ventas y margen</div>
-                <div class="scenario-toggle__buttons">
-                    <button type="button" class="scenario-btn" data-scenario="Real" aria-pressed="true">Real</button>
-                    <button type="button" class="scenario-btn" data-scenario="Presupuesto" aria-pressed="false">Presupuesto</button>
-                </div>
+        <div
+          class="card"
+          id="parametersCard"
+          style="display: none"
+        >
+          <h2>Parámetros de arriendo y dotación</h2>
+          <div class="parameters-section">
+            <h3>Dotación</h3>
+            <p class="helper">
+              Ajusta la dotación por rol para actualizar las remuneraciones
+              fijas y variables.
+            </p>
+            <div class="dotacion-rows">
+              <div class="dotacion-row">
+                <h4>Roles con comisión</h4>
+                <div
+                  class="dotacion-grid"
+                  id="simDotacionCommission"
+                ></div>
+              </div>
+              <div class="dotacion-row">
+                <h4>Roles sin comisión</h4>
+                <div
+                  class="dotacion-grid"
+                  id="simDotacionOthers"
+                ></div>
+              </div>
             </div>
-            <div class="table-wrapper">
-                <table id="simResultTable" class="results-table">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
+            <p class="helper">
+              Dotación total proyectada:
+              <span class="summary-pill"
+                ><strong id="simDotacionTotal">0</strong> personas</span
+              >
+            </p>
+          </div>
+          <div class="parameters-section">
+            <h3>Arriendo y otros costos</h3>
+            <div class="rent-grid">
+              <div class="input-group">
+                <label for="rentVmm">Arriendo mínimo (UF)</label>
+                <input
+                  id="rentVmm"
+                  type="text"
+                  inputmode="decimal"
+                  pattern="[0-9.,]*"
+                />
+              </div>
+              <div class="input-group">
+                <label for="rentPercent">Arriendo variable (%)</label>
+                <input
+                  id="rentPercent"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div class="input-group">
+                <label for="rentFondo">Fondo promoción (%)</label>
+                <input
+                  id="rentFondo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div class="input-group">
+                <label for="rentGgcc">GGCC (CLP)</label>
+                <input
+                  id="rentGgcc"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9.]*"
+                />
+              </div>
+              <div class="input-group">
+                <label for="rentUf">UF promedio</label>
+                <input
+                  id="rentUf"
+                  type="text"
+                  inputmode="decimal"
+                  pattern="[0-9.,]*"
+                />
+              </div>
+              <div class="input-group">
+                <label for="othersRate">Otros costos (% sobre venta)</label>
+                <input
+                  id="othersRate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
             </div>
+            <p class="helper">
+              Venta que activa el arriendo porcentual:
+              <span
+                class="summary-pill"
+                id="rentThresholdValue"
+                >–</span
+              >
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="card" id="parametersCard" style="display:none;">
-            <h2>Parámetros de arriendo y dotación</h2>
-            <div class="parameters-section">
-                <h3>Dotación</h3>
-                <p class="helper">Ajusta la dotación por rol para actualizar las remuneraciones fijas y variables.</p>
-                <div class="dotacion-rows">
-                    <div class="dotacion-row">
-                        <h4>Roles con comisión</h4>
-                        <div class="dotacion-grid" id="simDotacionCommission"></div>
-                    </div>
-                    <div class="dotacion-row">
-                        <h4>Roles sin comisión</h4>
-                        <div class="dotacion-grid" id="simDotacionOthers"></div>
-                    </div>
-                </div>
-                <p class="helper">Dotación total proyectada: <span class="summary-pill"><strong id="simDotacionTotal">0</strong> personas</span></p>
+      <div
+        class="card"
+        id="heatmapCard"
+        style="display: none"
+      >
+        <h3>Mapa de calor: Venta v/s Margen Contribución</h3>
+        <p class="helper">
+          Ajusta los incrementos para calcular el EBITDA% según venta y margen
+          de contribución.
+        </p>
+        <p
+          id="rentThreshold"
+          class="rent-threshold hidden"
+        ></p>
+        <div class="controls-block">
+          <h4>Escenario de ventas y márgenes</h4>
+          <div class="inputs-grid">
+            <div class="input-group">
+              <label for="ventaMin">Venta mínima (MM$)</label>
+              <input
+                id="ventaMin"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <small>Valor inicial expresado en millones de pesos.</small>
             </div>
-            <div class="parameters-section">
-                <h3>Arriendo y otros costos</h3>
-                <div class="rent-grid">
-                    <div class="input-group">
-                        <label for="rentVmm">Arriendo mínimo (UF)</label>
-                        <input id="rentVmm" type="text" inputmode="decimal" pattern="[0-9.,]*" />
-                    </div>
-                    <div class="input-group">
-                        <label for="rentPercent">Arriendo variable (%)</label>
-                        <input id="rentPercent" type="number" step="0.01" min="0" />
-                    </div>
-                    <div class="input-group">
-                        <label for="rentFondo">Fondo promoción (%)</label>
-                        <input id="rentFondo" type="number" step="0.01" min="0" />
-                    </div>
-                    <div class="input-group">
-                        <label for="rentGgcc">GGCC (CLP)</label>
-                        <input id="rentGgcc" type="text" inputmode="numeric" pattern="[0-9.]*" />
-                    </div>
-                    <div class="input-group">
-                        <label for="rentUf">UF promedio</label>
-                        <input id="rentUf" type="text" inputmode="decimal" pattern="[0-9.,]*" />
-                    </div>
-                    <div class="input-group">
-                        <label for="othersRate">Otros costos (% sobre venta)</label>
-                        <input id="othersRate" type="number" step="0.01" min="0" />
-                    </div>
-                </div>
-                <p class="helper">Venta que activa el arriendo porcentual: <span class="summary-pill" id="rentThresholdValue">–</span></p>
+            <div class="input-group">
+              <label for="ventaStep">Delta venta (MM$)</label>
+              <input
+                id="ventaStep"
+                type="number"
+                min="0.01"
+                step="0.1"
+                value="0.5"
+              />
+              <small>Incremento de venta en millones.</small>
             </div>
+            <div class="input-group">
+              <label for="margenMin">Margen mínimo (%)</label>
+              <input
+                id="margenMin"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+              <small>Punto de partida del margen de contribución.</small>
+            </div>
+            <div class="input-group">
+              <label for="margenStep">Delta margen (%)</label>
+              <input
+                id="margenStep"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value="1"
+              />
+              <small>Incremento del margen de contribución.</small>
+            </div>
+          </div>
         </div>
+        <div class="table-wrapper">
+          <table
+            id="heatmapTable"
+            class="heatmap"
+          >
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="controls-block">
+          <h4>Formato del mapa</h4>
+          <div class="inputs-grid">
+            <div class="input-group">
+              <label for="ventaLevels">Filas (ventas)</label>
+              <input
+                id="ventaLevels"
+                type="number"
+                min="1"
+                step="1"
+                value="15"
+              />
+              <small>Cantidad de niveles en el eje venta.</small>
+            </div>
+            <div class="input-group">
+              <label for="margenLevels">Columnas (margen)</label>
+              <input
+                id="margenLevels"
+                type="number"
+                min="1"
+                step="1"
+                value="20"
+              />
+              <small>Niveles a mostrar para el margen.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="card"
+        id="bannerResumenCard"
+        style="display: none"
+      >
+        <div class="header">
+          <h2>EBITDA consolidado por mes (simulado)</h2>
+        </div>
+        <div
+          class="banner-adjustments"
+          id="bannerAdjustments"
+          style="display: none"
+        >
+          <div class="adjustments-header">
+            <h4>Ajustes de venta y margen</h4>
+            <p class="helper">
+              El deflactor de venta (%) y el margen (%) se aplican a todas las
+              tiendas del banner para cada mes.
+            </p>
+          </div>
+          <div class="adjustments-actions">
+            <div class="action-group">
+              <span class="action-group-title">Venta:</span>
+              <button
+                type="button"
+                id="syncDeflatorsToggle"
+                class="action-btn"
+              >
+                Igualar deflactor...
+              </button>
+            </div>
+            <div
+              class="action-group"
+              id="syncDeflatorGroup"
+              style="display: none"
+            >
+              <span class="action-group-title">Valor:</span>
+              <input
+                type="number"
+                id="syncDeflatorValue"
+                step="1"
+                min="-100"
+                max="300"
+                value="0"
+                class="action-input"
+              />
+              <button
+                type="button"
+                id="applyDeflatorAllBtn"
+                class="action-btn"
+              >
+                Aplicar a todos
+              </button>
+            </div>
+            <div
+              class="action-group"
+              id="marginModeGroup"
+            >
+              <span class="action-group-title">Margen:</span>
+              <button
+                type="button"
+                id="marginOriginalBtn"
+                class="action-btn active"
+              >
+                Margen original
+              </button>
+              <button
+                type="button"
+                id="marginEditBtn"
+                class="action-btn"
+              >
+                Editar margen
+              </button>
+            </div>
+            <div
+              class="action-group"
+              id="ebitdaModeGroup"
+            >
+              <span class="action-group-title">Modo:</span>
+              <button
+                type="button"
+                id="ebitdaCurrencyBtn"
+                class="action-btn active"
+              >
+                Pesos ($)
+              </button>
+              <button
+                type="button"
+                id="ebitdaPercentBtn"
+                class="action-btn"
+              >
+                Porcentaje (%)
+              </button>
+            </div>
+            <div
+              class="action-group"
+              id="compareYearGroup"
+            >
+              <span class="action-group-title">Comparar con:</span>
+              <select
+                id="compareYearSelect"
+                class="action-input"
+                style="max-width: 120px"
+              >
+                <option value="">Sin comparar</option>
+              </select>
+            </div>
+          </div>
+          <div
+            class="adjustments-grid"
+            id="bannerAdjustmentsGrid"
+          ></div>
+        </div>
+        <div class="table-wrapper">
+          <table
+            id="bannerResumenTable"
+            class="summary-table"
+          >
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <div class="confidential-card">
+          Confidencial · Uso exclusivo de Yáneken
+        </div>
+      </div>
     </div>
 
     <script>
-        const metricConfig = __METRIC_CONFIG__;
-        const storeConfig = __STORE_CONFIG__;
-        const roleCosts = __ROLE_COSTS__;
-        const STAFF_ROLES = __STAFF_ROLES__;
-        const COMMISSION_ROLES = __COMMISSION_ROLES__;
-        const NON_COMMISSION_ROLES = __NON_COMMISSION_ROLES__;
-        const TOTAL_SALES_COMMISSIONS = __TOTAL_SALES_COMMISSIONS__;
-        const EXCLUDED_COMMISSION_ROLES = __EXCLUDED_COMMISSION_ROLES__;
-        const DEFAULT_UF = __DEFAULT_UF__;
-        const MONTH_LABELS = ['Ene.', 'Feb.', 'Mar.', 'Abr.', 'May.', 'Jun.', 'Jul.', 'Ago.', 'Sep.', 'Oct.', 'Nov.', 'Dic.'];
+      const metricConfig = __METRIC_CONFIG__;
+      const storeConfig = __STORE_CONFIG__;
+      const roleCosts = __ROLE_COSTS__;
+      const STAFF_ROLES = __STAFF_ROLES__;
+      const COMMISSION_ROLES = __COMMISSION_ROLES__;
+      const NON_COMMISSION_ROLES = __NON_COMMISSION_ROLES__;
+      const TOTAL_SALES_COMMISSIONS = __TOTAL_SALES_COMMISSIONS__;
+      const EXCLUDED_COMMISSION_ROLES = __EXCLUDED_COMMISSION_ROLES__;
+      const DEFAULT_UF = __DEFAULT_UF__;
+      const MONTH_LABELS = [
+        'Ene.',
+        'Feb.',
+        'Mar.',
+        'Abr.',
+        'May.',
+        'Jun.',
+        'Jul.',
+        'Ago.',
+        'Sep.',
+        'Oct.',
+        'Nov.',
+        'Dic.',
+      ];
+      const SCENARIO_KEYS = ['escenario_1', 'escenario_2', 'escenario_3'];
+      const SCENARIO_LABELS = {
+        escenario_1: 'Escenario 1',
+        escenario_2: 'Escenario 2',
+        escenario_3: 'Escenario 3',
+      };
 
-        const bannerSelect = document.getElementById('simBannerSelect');
-        const storeSelect = document.getElementById('simStoreSelect');
-        const resultCard = document.getElementById('resultCard');
-        const parametersCard = document.getElementById('parametersCard');
-        const resultHead = document.querySelector('#simResultTable thead');
-        const resultBody = document.querySelector('#simResultTable tbody');
-        const dotacionCommissionRow = document.getElementById('simDotacionCommission');
-        const dotacionOthersRow = document.getElementById('simDotacionOthers');
-        const dotacionTotalEl = document.getElementById('simDotacionTotal');
-        const rentVmmInput = document.getElementById('rentVmm');
-        const rentPercentInput = document.getElementById('rentPercent');
-        const rentFondoInput = document.getElementById('rentFondo');
-        const rentGgccInput = document.getElementById('rentGgcc');
-        const rentUfInput = document.getElementById('rentUf');
-        const othersRateInput = document.getElementById('othersRate');
-        const rentThresholdValue = document.getElementById('rentThresholdValue');
+      const yearSelect = document.getElementById('simYearSelect');
+      const bannerSelect = document.getElementById('simBannerSelect');
+      const storeSelect = document.getElementById('simStoreSelect');
+      const resultCard = document.getElementById('resultCard');
+      const parametersCard = document.getElementById('parametersCard');
+      const resultHead = document.querySelector('#simResultTable thead');
+      const resultBody = document.querySelector('#simResultTable tbody');
+      const dotacionCommissionRow = document.getElementById(
+        'simDotacionCommission'
+      );
+      const dotacionOthersRow = document.getElementById('simDotacionOthers');
+      const dotacionTotalEl = document.getElementById('simDotacionTotal');
+      const rentVmmInput = document.getElementById('rentVmm');
+      const rentPercentInput = document.getElementById('rentPercent');
+      const rentFondoInput = document.getElementById('rentFondo');
+      const rentGgccInput = document.getElementById('rentGgcc');
+      const rentUfInput = document.getElementById('rentUf');
+      const othersRateInput = document.getElementById('othersRate');
+      const rentThresholdValue = document.getElementById('rentThresholdValue');
+      const simulationLayout = document.getElementById('simulationLayout');
+      const periodToggle = document.getElementById('periodToggle');
+      const periodButtons = periodToggle
+        ? Array.from(
+            periodToggle.querySelectorAll('.scenario-btn[data-period]')
+          )
+        : [];
+      const monthSelectWrapper = document.getElementById('monthSelectWrapper');
+      const monthSelect = document.getElementById('simMonthSelect');
+      const heatmapCard = document.getElementById('heatmapCard');
+      const heatmapHead = document.querySelector('#heatmapTable thead');
+      const heatmapBody = document.querySelector('#heatmapTable tbody');
+      const rentThresholdEl = document.getElementById('rentThreshold');
+      const ventaMinInput = document.getElementById('ventaMin');
+      const ventaStepInput = document.getElementById('ventaStep');
+      const ventaLevelsInput = document.getElementById('ventaLevels');
+      const margenMinInput = document.getElementById('margenMin');
+      const margenStepInput = document.getElementById('margenStep');
+      const margenLevelsInput = document.getElementById('margenLevels');
 
-        const currencyFormatter = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
-        const percentFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-        const staffFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        const ufFormatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      // Resumen EBITDA por tienda del banner (debajo del heatmap)
+      let currentEbitdaMode = 'currency';
+      let bannerResumenCard = document.getElementById('bannerResumenCard');
+      let bannerResumenHead = document.querySelector(
+        '#bannerResumenTable thead'
+      );
+      let bannerResumenBody = document.querySelector(
+        '#bannerResumenTable tbody'
+      );
+      const bannerAdjustments = document.getElementById('bannerAdjustments');
+      const bannerAdjustmentsGrid = document.getElementById(
+        'bannerAdjustmentsGrid'
+      );
+      const syncDeflatorsToggle = document.getElementById(
+        'syncDeflatorsToggle'
+      );
+      const syncDeflatorGroup = document.getElementById('syncDeflatorGroup');
+      const syncDeflatorValueInput =
+        document.getElementById('syncDeflatorValue');
+      const applyDeflatorAllBtn = document.getElementById(
+        'applyDeflatorAllBtn'
+      );
+      const marginModeGroup = document.getElementById('marginModeGroup');
+      const marginOriginalBtn = document.getElementById('marginOriginalBtn');
+      const marginEditBtn = document.getElementById('marginEditBtn');
+      const ebitdaCurrencyBtn = document.getElementById('ebitdaCurrencyBtn');
+      const ebitdaPercentBtn = document.getElementById('ebitdaPercentBtn');
+      const compareYearSelect = document.getElementById('compareYearSelect');
+      const ALL_BANNERS_VALUE = '__ALL__';
+      const ALL_BANNERS_LABEL = 'Todos';
+      function getEbitdaClass(percentage) {
+        if (!Number.isFinite(percentage)) {
+          return '';
+        }
+        if (percentage < 0) return 'ebitda-negative';
+        if (percentage <= 5) return 'ebitda-low';
+        return 'ebitda-high';
+      }
 
-        const bannerMap = {};
-        for (const [storeKey, config] of Object.entries(storeConfig)) {
-            const banner = config.banner ? String(config.banner) : 'Sin banner';
-            if (!bannerMap[banner]) {
-                bannerMap[banner] = [];
+      function computeStaffAggregatesForConfig(config) {
+        let fijo = 0;
+        let vendedores = 0;
+        let tasaSumada = 0;
+        let tasaTotalVentas = 0;
+
+        for (const [rol, cantidadRaw] of Object.entries(config.staff || {})) {
+          const cantidad = Math.max(Math.round(Number(cantidadRaw) || 0), 0);
+          if (cantidad <= 0) {
+            continue;
+          }
+          const metadata = roleCosts[rol] || {};
+          const fijoUnitario = Number(metadata.fixed || 0);
+          const comision = Number(metadata.commission || 0);
+          fijo += cantidad * fijoUnitario;
+
+          if (TOTAL_SALES_COMMISSIONS.includes(rol) && comision > 0) {
+            const tasa = comision <= 1 ? comision : comision / 100000000;
+            tasaTotalVentas += cantidad * tasa;
+            continue;
+          }
+          if (EXCLUDED_COMMISSION_ROLES.includes(rol)) {
+            continue;
+          }
+          if (comision > 1) {
+            fijo += cantidad * comision;
+          } else if (comision > 0) {
+            vendedores += cantidad;
+            tasaSumada += cantidad * comision;
+          }
+        }
+        return { fijo, vendedores, tasaSumada, tasaTotalVentas };
+      }
+
+      function computeEbitdaForStoreMonth(config, mes, adjustments) {
+        let venta = Math.max(Number((config.sales || {})[mes] || 0), 0);
+        let margenPct = Math.max(Number((config.margins || {})[mes] || 0), 0);
+        if (
+          adjustments &&
+          adjustments.deflators &&
+          Object.prototype.hasOwnProperty.call(adjustments.deflators, mes)
+        ) {
+          const deltaPct = Number(adjustments.deflators[mes]);
+          if (Number.isFinite(deltaPct)) {
+            venta *= 1 + deltaPct / 100;
+          }
+        }
+        if (
+          adjustments &&
+          adjustments.margins &&
+          Object.prototype.hasOwnProperty.call(adjustments.margins, mes)
+        ) {
+          const override = Number(adjustments.margins[mes]);
+          if (Number.isFinite(override)) {
+            margenPct = Math.max(override, 0);
+          }
+        }
+        const margenDecimal = margenPct / 100;
+        if (venta <= 0) {
+          return { ebitda: 0, margenEbitda: 0, venta: 0 };
+        }
+
+        const staffAgg = computeStaffAggregatesForConfig(config);
+        const contribucion = venta * margenDecimal;
+
+        const rentFactor = getRentFactorForMonth(config.rent, mes);
+        const ufValor = getUfValueForMonth(config.rent, mes);
+        const arriendoMinimoClp =
+          (config.rent?.vmm_uf || 0) * ufValor * rentFactor;
+        const rentPercent = Number(config.rent?.percent || 0);
+        const fondoPromocionPct = Number(config.rent?.fondo_promocion || 0);
+        const ggcc = Number(config.rent?.ggcc || 0);
+        const montoPorcentual = venta * rentPercent;
+        const arriendoBase = Math.max(arriendoMinimoClp, montoPorcentual);
+        const arriendoFondoPromocion = arriendoBase * fondoPromocionPct;
+        const arriendoTotal = arriendoBase + arriendoFondoPromocion + ggcc;
+
+        let comisionesVariables = 0;
+        if (staffAgg.vendedores > 0 && staffAgg.tasaSumada > 0) {
+          comisionesVariables +=
+            (venta / staffAgg.vendedores) * staffAgg.tasaSumada;
+        }
+        if (staffAgg.tasaTotalVentas > 0) {
+          comisionesVariables += venta * staffAgg.tasaTotalVentas;
+        }
+
+        const costoDotacion = staffAgg.fijo + comisionesVariables;
+        const redesSistemas = Number(config.network_systems_cost || 0);
+        const comisionMedioPago =
+          venta * Number(config.payment_commission_rate || 0);
+        const otrosCostos = venta * Number(config.others_rate || 0);
+        const gastoOperacional =
+          costoDotacion +
+          arriendoTotal +
+          redesSistemas +
+          comisionMedioPago +
+          otrosCostos;
+        const ebitda = contribucion - gastoOperacional;
+        const margenEbitda = (ebitda / venta) * 100;
+        return { ebitda, margenEbitda, venta };
+      }
+
+      function computeYearTotals(bannerKey, year, ebitdaMode) {
+        // Debug logging (temporal - remover después de verificar funcionamiento)
+        const DEBUG_COMPARE = false; // Cambiar a true para habilitar logging
+
+        if (DEBUG_COMPARE) {
+          console.log('[computeYearTotals] Iniciando cálculo para:', {
+            bannerKey,
+            year,
+            ebitdaMode,
+          });
+        }
+
+        const isAllBanners = bannerKey === ALL_BANNERS_VALUE;
+        const stores = isAllBanners
+          ? allStoreKeys.slice()
+          : bannerMap[bannerKey]
+          ? bannerMap[bannerKey].slice()
+          : [];
+
+        if (DEBUG_COMPARE) {
+          console.log('[computeYearTotals] Tiendas:', stores.length);
+        }
+
+        if (!stores.length) {
+          if (DEBUG_COMPARE) {
+            console.log('[computeYearTotals] Sin tiendas, retornando 0');
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
+
+        // Obtener meses del año de comparación: usar unión de meses disponibles
+        // Filtrar por año ANTES de hacer la unión para asegurar que tenemos meses del año correcto
+        const allCompareMonths = new Set();
+        for (const storeKey of stores) {
+          const config = storeConfig[storeKey];
+          if (!config || !config.months) {
+            continue;
+          }
+          // Filtrar meses del año de comparación para esta tienda
+          const storeMonthsForYear = filterMonthsByYear(config.months, year);
+          storeMonthsForYear.forEach((mes) => allCompareMonths.add(mes));
+        }
+
+        let compareMonths = Array.from(allCompareMonths);
+
+        if (DEBUG_COMPARE) {
+          console.log(
+            '[computeYearTotals] Meses encontrados antes de validación:',
+            compareMonths.length,
+            compareMonths
+          );
+        }
+
+        // Si no hay meses después del filtro pero el año es válido, generar meses simulados
+        // pero solo si realmente hay datos para esos meses
+        if (!compareMonths.length && year && year.length === 4) {
+          // Verificar si alguna tienda tiene datos para ese año antes de generar meses simulados
+          let hasDataForYear = false;
+          for (const storeKey of stores) {
+            const config = storeConfig[storeKey];
+            if (!config) continue;
+            // Verificar si hay datos de venta o margen para cualquier mes del año
+            for (let month = 1; month <= 12; month++) {
+              const mes = `${year}-${String(month).padStart(2, '0')}`;
+              const hasVenta =
+                config.sales &&
+                config.sales[mes] !== undefined &&
+                config.sales[mes] !== null;
+              const hasMargen =
+                config.margins &&
+                config.margins[mes] !== undefined &&
+                config.margins[mes] !== null;
+              if (hasVenta || hasMargen) {
+                hasDataForYear = true;
+                break;
+              }
             }
-            bannerMap[banner].push(storeKey);
-        }
-        for (const stores of Object.values(bannerMap)) {
-            stores.sort((a, b) => a.localeCompare(b));
+            if (hasDataForYear) break;
+          }
+
+          if (hasDataForYear) {
+            // Generar meses simulados solo si hay datos para el año
+            compareMonths = [];
+            for (let month = 1; month <= 12; month++) {
+              compareMonths.push(`${year}-${String(month).padStart(2, '0')}`);
+            }
+          }
         }
 
-        let currentStoreKey = '';
-        let currentMonths = [];
-        let resultRegistry = {};
+        if (!compareMonths.length) {
+          if (DEBUG_COMPARE) {
+            console.log(
+              '[computeYearTotals] Sin meses para comparar, retornando 0'
+            );
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
 
-        const state = {
-            sales: {},
-            margins: {},
-            staff: {},
-            rent: { vmm_uf: 0, percent: 0, fondo_promocion: 0, ggcc: 0, uf_value: DEFAULT_UF },
-            othersRate: 0,
+        if (DEBUG_COMPARE) {
+          console.log(
+            '[computeYearTotals] Meses finales a procesar:',
+            compareMonths.length,
+            compareMonths
+          );
+        }
+
+        // No aplicar ajustes de simulación para el año de comparación (mostrar datos reales)
+        const adjustments = { deflators: {}, margins: {} };
+
+        let totalEbitda = 0;
+        let totalVenta = 0;
+        let monthsWithData = 0; // Contador de meses que realmente tienen datos
+
+        for (const storeKey of stores) {
+          const config = storeConfig[storeKey];
+          if (!config) {
+            continue;
+          }
+
+          for (const mes of compareMonths) {
+            // Validar que el mes tiene datos antes de calcular
+            const hasVenta =
+              config.sales &&
+              config.sales[mes] !== undefined &&
+              config.sales[mes] !== null;
+            const hasMargen =
+              config.margins &&
+              config.margins[mes] !== undefined &&
+              config.margins[mes] !== null;
+
+            if (DEBUG_COMPARE && storeKey === stores[0]) {
+              // Solo log para primera tienda para no saturar
+              console.log(`[computeYearTotals] ${storeKey} ${mes}:`, {
+                hasVenta,
+                hasMargen,
+                ventaValue: config.sales?.[mes],
+                margenValue: config.margins?.[mes],
+              });
+            }
+
+            // Solo calcular si hay datos de venta o margen para este mes
+            if (hasVenta || hasMargen) {
+              const { ebitda, venta } = computeEbitdaForStoreMonth(
+                config,
+                mes,
+                adjustments
+              );
+              // Solo incluir si hay venta real (no solo 0)
+              if (venta > 0) {
+                totalEbitda += ebitda;
+                totalVenta += venta;
+                monthsWithData++;
+
+                if (DEBUG_COMPARE && storeKey === stores[0]) {
+                  console.log(`[computeYearTotals] ${storeKey} ${mes}:`, {
+                    ebitda,
+                    venta,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Si no hay datos válidos, retornar 0
+        if (monthsWithData === 0 || totalVenta === 0) {
+          if (DEBUG_COMPARE) {
+            console.log('[computeYearTotals] Sin datos válidos:', {
+              monthsWithData,
+              totalVenta,
+              totalEbitda,
+            });
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
+
+        const margenEbitda =
+          totalVenta > 0 ? (totalEbitda / totalVenta) * 100 : 0;
+
+        if (DEBUG_COMPARE) {
+          console.log('[computeYearTotals] Resultado final:', {
+            totalEbitda,
+            totalVenta,
+            margenEbitda,
+            monthsWithData,
+          });
+        }
+
+        return { ebitda: totalEbitda, venta: totalVenta, margenEbitda };
+      }
+
+      function computeStoreYearTotals(storeKey, year, ebitdaMode) {
+        // Debug logging (temporal - remover después de verificar funcionamiento)
+        const DEBUG_COMPARE = false; // Cambiar a true para habilitar logging
+
+        if (DEBUG_COMPARE) {
+          console.log('[computeStoreYearTotals] Iniciando cálculo para:', {
+            storeKey,
+            year,
+            ebitdaMode,
+          });
+        }
+
+        const config = storeConfig[storeKey];
+        if (!config) {
+          if (DEBUG_COMPARE) {
+            console.log(
+              '[computeStoreYearTotals] Sin configuración para tienda, retornando 0'
+            );
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
+
+        // Obtener meses del año de comparación para esta tienda
+        const storeMonths = config.months || [];
+        let compareMonths = filterMonthsByYear(storeMonths, year);
+
+        if (DEBUG_COMPARE) {
+          console.log(
+            '[computeStoreYearTotals] Meses encontrados para tienda:',
+            compareMonths.length,
+            compareMonths
+          );
+        }
+
+        // Si no hay meses después del filtro pero el año es válido, verificar si hay datos y generar meses simulados
+        if (!compareMonths.length && year && year.length === 4) {
+          // Verificar si hay datos de venta o margen para cualquier mes del año
+          let hasDataForYear = false;
+          for (let month = 1; month <= 12; month++) {
+            const mes = `${year}-${String(month).padStart(2, '0')}`;
+            const hasVenta =
+              config.sales &&
+              config.sales[mes] !== undefined &&
+              config.sales[mes] !== null;
+            const hasMargen =
+              config.margins &&
+              config.margins[mes] !== undefined &&
+              config.margins[mes] !== null;
+            if (hasVenta || hasMargen) {
+              hasDataForYear = true;
+              break;
+            }
+          }
+
+          if (hasDataForYear) {
+            // Generar meses simulados solo si hay datos para el año
+            compareMonths = [];
+            for (let month = 1; month <= 12; month++) {
+              compareMonths.push(`${year}-${String(month).padStart(2, '0')}`);
+            }
+          }
+        }
+
+        if (!compareMonths.length) {
+          if (DEBUG_COMPARE) {
+            console.log(
+              '[computeStoreYearTotals] Sin meses para comparar, retornando 0'
+            );
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
+
+        if (DEBUG_COMPARE) {
+          console.log(
+            '[computeStoreYearTotals] Meses finales a procesar:',
+            compareMonths.length,
+            compareMonths
+          );
+        }
+
+        // No aplicar ajustes de simulación para el año de comparación (mostrar datos reales)
+        const adjustments = { deflators: {}, margins: {} };
+
+        let totalEbitda = 0;
+        let totalVenta = 0;
+        let monthsWithData = 0; // Contador de meses que realmente tienen datos
+
+        for (const mes of compareMonths) {
+          // Validar que el mes tiene datos antes de calcular
+          const hasVenta =
+            config.sales &&
+            config.sales[mes] !== undefined &&
+            config.sales[mes] !== null;
+          const hasMargen =
+            config.margins &&
+            config.margins[mes] !== undefined &&
+            config.margins[mes] !== null;
+
+          if (DEBUG_COMPARE) {
+            console.log(`[computeStoreYearTotals] ${storeKey} ${mes}:`, {
+              hasVenta,
+              hasMargen,
+              ventaValue: config.sales?.[mes],
+              margenValue: config.margins?.[mes],
+            });
+          }
+
+          // Solo calcular si hay datos de venta o margen para este mes
+          if (hasVenta || hasMargen) {
+            const { ebitda, venta } = computeEbitdaForStoreMonth(
+              config,
+              mes,
+              adjustments
+            );
+            // Solo incluir si hay venta real (no solo 0)
+            if (venta > 0) {
+              totalEbitda += ebitda;
+              totalVenta += venta;
+              monthsWithData++;
+
+              if (DEBUG_COMPARE) {
+                console.log(`[computeStoreYearTotals] ${storeKey} ${mes}:`, {
+                  ebitda,
+                  venta,
+                });
+              }
+            }
+          }
+        }
+
+        // Si no hay datos válidos, retornar 0
+        if (monthsWithData === 0 || totalVenta === 0) {
+          if (DEBUG_COMPARE) {
+            console.log('[computeStoreYearTotals] Sin datos válidos:', {
+              monthsWithData,
+              totalVenta,
+              totalEbitda,
+            });
+          }
+          return { ebitda: 0, venta: 0, margenEbitda: 0 };
+        }
+
+        const margenEbitda =
+          totalVenta > 0 ? (totalEbitda / totalVenta) * 100 : 0;
+
+        if (DEBUG_COMPARE) {
+          console.log('[computeStoreYearTotals] Resultado final:', {
+            totalEbitda,
+            totalVenta,
+            margenEbitda,
+            monthsWithData,
+          });
+        }
+
+        return { ebitda: totalEbitda, venta: totalVenta, margenEbitda };
+      }
+
+      function renderBannerResumen(bannerKey, options = {}) {
+        const { skipAdjustmentRender = false } = options || {};
+        currentBannerKey = bannerKey || '';
+        if (!bannerResumenHead || !bannerResumenBody) {
+          return;
+        }
+        bannerResumenHead.innerHTML = '';
+        bannerResumenBody.innerHTML = '';
+
+        const isAllBanners = bannerKey === ALL_BANNERS_VALUE;
+        const stores = isAllBanners
+          ? allStoreKeys.slice()
+          : bannerMap[bannerKey]
+          ? bannerMap[bannerKey].slice()
+          : [];
+
+        if (!bannerKey || stores.length === 0) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 2;
+          cell.textContent = !bannerKey
+            ? 'Selecciona un banner para revisar el EBITDA por tienda.'
+            : 'Sin sucursales disponibles para la selección.';
+          row.appendChild(cell);
+          bannerResumenBody.appendChild(row);
+          if (
+            !skipAdjustmentRender &&
+            bannerAdjustments &&
+            bannerAdjustmentsGrid
+          ) {
+            bannerAdjustments.style.display = 'none';
+            bannerAdjustmentsGrid.innerHTML = '';
+          }
+          return;
+        }
+
+        // Determinar meses a usar: intersección de meses disponibles en las tiendas seleccionadas
+        stores.sort((a, b) => a.localeCompare(b));
+        const monthSets = stores
+          .map((storeKey) => new Set(storeConfig[storeKey]?.months || []))
+          .filter((s) => s.size > 0);
+        let months = monthSets.length
+          ? Array.from(
+              monthSets.reduce(
+                (acc, s) => new Set([...acc].filter((m) => s.has(m)))
+              )
+            )
+          : [];
+
+        // Filtrar meses por año seleccionado
+        const selectedYear = yearSelect.value;
+        const compareYear = compareYearSelect ? compareYearSelect.value : '';
+        months = filterMonthsByYear(months, selectedYear);
+
+        // Si no hay meses después del filtro pero hay un año seleccionado,
+        // generar meses simulados del año seleccionado (permite simular años futuros)
+        if (!months.length && selectedYear && selectedYear.length === 4) {
+          months = [];
+          for (let month = 1; month <= 12; month++) {
+            months.push(`${selectedYear}-${String(month).padStart(2, '0')}`);
+          }
+        }
+
+        if (!months.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 2;
+          cell.textContent =
+            'Sin meses disponibles para las sucursales seleccionadas.';
+          row.appendChild(cell);
+          bannerResumenBody.appendChild(row);
+          if (
+            !skipAdjustmentRender &&
+            bannerAdjustments &&
+            bannerAdjustmentsGrid
+          ) {
+            bannerAdjustments.style.display = 'none';
+            bannerAdjustmentsGrid.innerHTML = '';
+          }
+          return;
+        }
+
+        const defaultMarginMode = 'original';
+        let marginMode = bannerMarginModes[bannerKey] || defaultMarginMode;
+        if (isAllBanners && marginMode !== 'original') {
+          marginMode = 'original';
+        }
+        bannerMarginModes[bannerKey] = marginMode;
+
+        const skipMargins = marginMode !== 'override';
+        const adjustments = ensureBannerAdjustments(bannerKey, months, {
+          skipMargins,
+        });
+        if (
+          !skipAdjustmentRender &&
+          bannerAdjustments &&
+          bannerAdjustmentsGrid
+        ) {
+          renderBannerAdjustments(bannerKey, months, adjustments, {
+            onlyDeflators: skipMargins,
+            marginMode,
+            showMarginModeToggle: !isAllBanners,
+            isAllBanners,
+          });
+        }
+
+        const headerRow = document.createElement('tr');
+        const thStore = document.createElement('th');
+        thStore.textContent = 'Tienda';
+        headerRow.appendChild(thStore);
+        months.forEach((mes, idx) => {
+          const th = document.createElement('th');
+          th.textContent = formatMonthLabel(mes);
+          th.classList.add('sortable');
+          if (bannerSortState.column === idx) {
+            const arrow = document.createElement('span');
+            arrow.textContent =
+              bannerSortState.direction === 'desc' ? ' ▼' : ' ▲';
+            th.appendChild(arrow);
+          }
+          th.addEventListener('click', () => {
+            if (bannerSortState.column === idx) {
+              bannerSortState.direction =
+                bannerSortState.direction === 'desc' ? 'asc' : 'desc';
+            } else {
+              bannerSortState.column = idx;
+              bannerSortState.direction = 'desc';
+            }
+            renderBannerResumen(bannerKey);
+          });
+          headerRow.appendChild(th);
+        });
+        const thTotal = document.createElement('th');
+        const totalLabel =
+          currentEbitdaMode === 'percent'
+            ? selectedYear
+              ? `Promedio EBITDA % ${selectedYear}`
+              : 'Promedio EBITDA %'
+            : selectedYear
+            ? `Total ${selectedYear}`
+            : 'Total EBITDA';
+        thTotal.textContent = totalLabel;
+        thTotal.classList.add('sortable');
+        if (bannerSortState.column === months.length) {
+          const arrow = document.createElement('span');
+          arrow.textContent =
+            bannerSortState.direction === 'desc' ? ' ▼' : ' ▲';
+          thTotal.appendChild(arrow);
+        }
+        thTotal.addEventListener('click', () => {
+          if (bannerSortState.column === months.length) {
+            bannerSortState.direction =
+              bannerSortState.direction === 'desc' ? 'asc' : 'desc';
+          } else {
+            bannerSortState.column = months.length;
+            bannerSortState.direction = 'desc';
+          }
+          renderBannerResumen(bannerKey);
+        });
+        headerRow.appendChild(thTotal);
+
+        // Agregar columna de comparación si hay año de comparación seleccionado
+        if (compareYear && compareYear.length === 4) {
+          const thCompare = document.createElement('th');
+          const compareLabel =
+            currentEbitdaMode === 'percent'
+              ? `Promedio EBITDA % ${compareYear}`
+              : `Total ${compareYear}`;
+          thCompare.textContent = compareLabel;
+          thCompare.classList.add('total-cell');
+          headerRow.appendChild(thCompare);
+        }
+
+        bannerResumenHead.appendChild(headerRow);
+
+        const totalsByMonth = months.map(() => 0); // EBITDA $ por mes (suma)
+        const countsByMonth = months.map(() => 0); // Cuenta para promedios en modo %
+        const percentTotalsByMonth = months.map(() => 0); // Suma de % para promedios en modo %
+        const ventasByMonth = months.map(() => 0); // Venta por mes (para % agregado en modo $)
+        let totalBanner = 0; // EBITDA $ total (modo $) o suma de % (modo porcentaje)
+        let countBanner = 0; // Conteo para promedio en modo porcentaje
+        let percentTotalBanner = 0; // Suma de % para promedio en modo porcentaje
+        let ventasBanner = 0; // Venta total para % agregado en modo $
+
+        function getSortValueForStore(storeKey) {
+          const config = storeConfig[storeKey];
+          if (!config) return Number.NaN;
+          const col = bannerSortState.column;
+          if (col === null) return Number.NaN;
+          if (col >= 0 && col < months.length) {
+            const { ebitda, margenEbitda } = computeEbitdaForStoreMonth(
+              config,
+              months[col],
+              adjustments
+            );
+            return currentEbitdaMode === 'percent' ? margenEbitda : ebitda;
+          }
+          if (currentEbitdaMode === 'percent') {
+            let sum = 0,
+              cnt = 0;
+            months.forEach((m) => {
+              const { margenEbitda } = computeEbitdaForStoreMonth(
+                config,
+                m,
+                adjustments
+              );
+              if (Number.isFinite(margenEbitda)) {
+                sum += margenEbitda;
+                cnt += 1;
+              }
+            });
+            return cnt > 0 ? sum / cnt : Number.NaN;
+          }
+          let total = 0;
+          months.forEach((m) => {
+            total += computeEbitdaForStoreMonth(config, m, adjustments).ebitda;
+          });
+          return total;
+        }
+
+        const sortedStores = stores.slice();
+        if (bannerSortState.column !== null) {
+          sortedStores.sort((a, b) => {
+            const va = getSortValueForStore(a);
+            const vb = getSortValueForStore(b);
+            const da = Number.isFinite(va) ? va : -Infinity;
+            const db = Number.isFinite(vb) ? vb : -Infinity;
+            const diff = db - da;
+            return bannerSortState.direction === 'desc' ? diff : -diff;
+          });
+        }
+
+        for (const storeKey of sortedStores) {
+          const config = storeConfig[storeKey];
+          if (!config) {
+            continue;
+          }
+          const row = document.createElement('tr');
+          const cellStore = document.createElement('th');
+          cellStore.textContent = storeKey;
+          row.appendChild(cellStore);
+
+          let totalTienda = 0; // EBITDA $ acumulado de la tienda
+          let countTienda = 0; // Conteo para promedio en modo porcentaje
+          let percentSumTienda = 0; // Suma de % para promedio en modo porcentaje
+          let ventaTienda = 0; // Venta acumulada de la tienda (para % agregado en modo $)
+          months.forEach((mes, idx) => {
+            const { ebitda, margenEbitda, venta } = computeEbitdaForStoreMonth(
+              config,
+              mes,
+              adjustments
+            );
+            const cell = document.createElement('td');
+            if (currentEbitdaMode === 'percent') {
+              const valor = margenEbitda;
+              const span = document.createElement('span');
+              span.textContent = percentFormatter.format(valor) + '%';
+              const cls = getEbitdaClass(valor);
+              if (cls) span.classList.add(cls);
+              cell.appendChild(span);
+              totalTienda += valor;
+              countTienda++;
+              percentTotalsByMonth[idx] += valor;
+              countsByMonth[idx]++;
+            } else {
+              const span = document.createElement('span');
+              span.textContent = currencyFormatter.format(ebitda);
+              const cls = getEbitdaClass(margenEbitda);
+              if (cls) span.classList.add(cls);
+              cell.appendChild(span);
+              totalTienda += ebitda;
+              totalsByMonth[idx] += ebitda;
+              // Acumular ventas para calcular % EBITDA agregado (consistente con el total en $)
+              if (Number.isFinite(venta)) {
+                ventaTienda += venta;
+                ventasByMonth[idx] += venta;
+                ventasBanner += venta;
+              }
+            }
+            row.appendChild(cell);
+          });
+          const totalCell = document.createElement('td');
+          if (currentEbitdaMode === 'percent') {
+            if (countTienda > 0) {
+              const promedio = totalTienda / countTienda;
+              const span = document.createElement('span');
+              span.textContent = percentFormatter.format(promedio) + '%';
+              const cls = getEbitdaClass(promedio);
+              if (cls) span.classList.add(cls);
+              totalCell.appendChild(span);
+              totalBanner += totalTienda;
+              countBanner += countTienda;
+            } else {
+              totalCell.textContent = '–';
+            }
+          } else {
+            const span = document.createElement('span');
+            span.textContent = currencyFormatter.format(totalTienda);
+            // Color basado en % EBITDA agregado de la tienda (sum EBITDA / sum ventas)
+            const agregadoPct =
+              ventaTienda > 0 ? (totalTienda / ventaTienda) * 100 : 0;
+            const cls = getEbitdaClass(agregadoPct);
+            if (cls) span.classList.add(cls);
+            totalCell.appendChild(span);
+            totalBanner += totalTienda;
+          }
+          totalCell.classList.add('total-cell');
+          row.appendChild(totalCell);
+
+          // Agregar celda de comparación para esta tienda si hay año de comparación seleccionado
+          if (compareYear && compareYear.length === 4) {
+            const compareStoreTotals = computeStoreYearTotals(
+              storeKey,
+              compareYear,
+              currentEbitdaMode
+            );
+            const compareStoreCell = document.createElement('td');
+
+            if (currentEbitdaMode === 'percent') {
+              if (
+                compareStoreTotals.venta > 0 &&
+                compareStoreTotals.margenEbitda !== 0
+              ) {
+                const span = document.createElement('span');
+                span.textContent =
+                  percentFormatter.format(compareStoreTotals.margenEbitda) +
+                  '%';
+                const cls = getEbitdaClass(compareStoreTotals.margenEbitda);
+                if (cls) span.classList.add(cls);
+                compareStoreCell.appendChild(span);
+              } else {
+                compareStoreCell.textContent = '–';
+              }
+            } else {
+              if (
+                compareStoreTotals.ebitda !== 0 ||
+                compareStoreTotals.venta > 0
+              ) {
+                const span = document.createElement('span');
+                span.textContent = currencyFormatter.format(
+                  compareStoreTotals.ebitda
+                );
+                const cls = getEbitdaClass(compareStoreTotals.margenEbitda);
+                if (cls) span.classList.add(cls);
+                compareStoreCell.appendChild(span);
+              } else {
+                compareStoreCell.textContent = '–';
+              }
+            }
+            compareStoreCell.classList.add('total-cell');
+            row.appendChild(compareStoreCell);
+          }
+
+          bannerResumenBody.appendChild(row);
+        }
+
+        if (stores.length > 0) {
+          const totalRow = document.createElement('tr');
+          totalRow.classList.add('total-row');
+          const totalLabel = document.createElement('th');
+          totalLabel.textContent = 'Total banner';
+          totalRow.appendChild(totalLabel);
+          months.forEach((_, idx) => {
+            const cell = document.createElement('td');
+            if (currentEbitdaMode === 'percent') {
+              if (countsByMonth[idx] > 0) {
+                const promedio = percentTotalsByMonth[idx] / countsByMonth[idx];
+                const span = document.createElement('span');
+                span.textContent = percentFormatter.format(promedio) + '%';
+                const cls = getEbitdaClass(promedio);
+                if (cls) span.classList.add(cls);
+                cell.appendChild(span);
+              } else {
+                cell.textContent = '–';
+              }
+            } else {
+              const span = document.createElement('span');
+              span.textContent = currencyFormatter.format(totalsByMonth[idx]);
+              // Color basado en % EBITDA agregado del banner por mes
+              const pctAgregadoMes =
+                ventasByMonth[idx] > 0
+                  ? (totalsByMonth[idx] / ventasByMonth[idx]) * 100
+                  : 0;
+              const cls = getEbitdaClass(pctAgregadoMes);
+              if (cls) span.classList.add(cls);
+              cell.appendChild(span);
+            }
+            cell.classList.add('total-cell');
+            totalRow.appendChild(cell);
+          });
+          const totalBannerCell = document.createElement('td');
+          if (currentEbitdaMode === 'percent') {
+            if (countBanner > 0) {
+              const promedio = totalBanner / countBanner;
+              const span = document.createElement('span');
+              span.textContent = percentFormatter.format(promedio) + '%';
+              const cls = getEbitdaClass(promedio);
+              if (cls) span.classList.add(cls);
+              totalBannerCell.appendChild(span);
+            } else {
+              totalBannerCell.textContent = '–';
+            }
+          } else {
+            const span = document.createElement('span');
+            span.textContent = currencyFormatter.format(totalBanner);
+            // Color basado en % EBITDA agregado total del banner (todas las tiendas y meses)
+            const pctAgregadoTotal =
+              ventasBanner > 0 ? (totalBanner / ventasBanner) * 100 : 0;
+            const cls = getEbitdaClass(pctAgregadoTotal);
+            if (cls) span.classList.add(cls);
+            totalBannerCell.appendChild(span);
+          }
+          totalBannerCell.classList.add('total-cell');
+          totalRow.appendChild(totalBannerCell);
+
+          // Agregar celda de comparación si hay año de comparación seleccionado
+          if (compareYear && compareYear.length === 4) {
+            const compareTotals = computeYearTotals(
+              bannerKey,
+              compareYear,
+              currentEbitdaMode
+            );
+            const compareCell = document.createElement('td');
+
+            if (currentEbitdaMode === 'percent') {
+              const span = document.createElement('span');
+              span.textContent =
+                percentFormatter.format(compareTotals.margenEbitda) + '%';
+              const cls = getEbitdaClass(compareTotals.margenEbitda);
+              if (cls) span.classList.add(cls);
+              compareCell.appendChild(span);
+            } else {
+              const span = document.createElement('span');
+              span.textContent = currencyFormatter.format(compareTotals.ebitda);
+              const cls = getEbitdaClass(compareTotals.margenEbitda);
+              if (cls) span.classList.add(cls);
+              compareCell.appendChild(span);
+            }
+            compareCell.classList.add('total-cell');
+            totalRow.appendChild(compareCell);
+          }
+
+          bannerResumenBody.appendChild(totalRow);
+        }
+      }
+
+      const currencyFormatter = new Intl.NumberFormat('es-CL', {
+        maximumFractionDigits: 0,
+      });
+      const percentFormatter = new Intl.NumberFormat('es-CL', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+      const staffFormatter = new Intl.NumberFormat('es-CL', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+      const ufFormatter = new Intl.NumberFormat('es-CL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      const bannerMap = {};
+      for (const [storeKey, config] of Object.entries(storeConfig)) {
+        const banner = config.banner ? String(config.banner) : 'Sin banner';
+        if (!bannerMap[banner]) {
+          bannerMap[banner] = [];
+        }
+        bannerMap[banner].push(storeKey);
+      }
+      for (const stores of Object.values(bannerMap)) {
+        stores.sort((a, b) => a.localeCompare(b));
+      }
+      const allStoreKeys = Object.keys(storeConfig).sort((a, b) =>
+        a.localeCompare(b)
+      );
+
+      let currentStoreKey = '';
+      let currentMonths = [];
+      let availableMonths = [];
+      let selectedMonth = '';
+      let simulationMode = 'month';
+      let referenceMonth = '';
+      let resultRegistry = {};
+      let currentBannerKey = '';
+      const bannerSalesDeflators = {};
+      const bannerMarginOverrides = {};
+      const bannerMarginModes = {};
+      bannerMarginModes[ALL_BANNERS_VALUE] = 'original';
+      let syncDeflatorsEnabled = false;
+      let bannerSortState = { column: null, direction: 'desc' };
+
+      const state = {
+        sales: {},
+        margins: {},
+        staff: {},
+        rent: {
+          vmm_uf: 0,
+          percent: 0,
+          fondo_promocion: 0,
+          ggcc: 0,
+          uf_value: Number(DEFAULT_UF) || 0,
+          uf_values: {},
+          factor: 1,
+        },
+        othersRate: 0,
+        networkSystemsCost: 0,
+        paymentCommissionRate: 0,
+      };
+
+      function parseNumber(value) {
+        if (typeof value === 'number') {
+          return Number.isFinite(value) ? value : 0;
+        }
+        if (value === null || value === undefined || value === '') {
+          return 0;
+        }
+        let sanitized = String(value).replace(/\s+/g, '');
+        if (sanitized.includes(',')) {
+          sanitized = sanitized.replace(/\./g, '').replace(/,/g, '.');
+        } else {
+          const dotCount = (sanitized.match(/\./g) || []).length;
+          if (dotCount > 1) {
+            sanitized = sanitized.replace(/\./g, '');
+          }
+        }
+        const numero = Number(sanitized);
+        return Number.isFinite(numero) ? numero : 0;
+      }
+
+      function parseNumberInputValue(value) {
+        if (value === null || value === undefined) {
+          return null;
+        }
+        let sanitized = String(value).trim();
+        if (!sanitized) {
+          return null;
+        }
+        sanitized = sanitized.replace(/\s+/g, '');
+        if (sanitized.includes(',')) {
+          sanitized = sanitized.replace(/\./g, '').replace(/,/g, '.');
+        } else {
+          const dotCount = (sanitized.match(/\./g) || []).length;
+          if (dotCount > 1) {
+            sanitized = sanitized.replace(/\./g, '');
+          }
+        }
+        if (
+          /^[+-]?\.$/.test(sanitized) ||
+          sanitized === '+' ||
+          sanitized === '-'
+        ) {
+          return null;
+        }
+        const numero = Number(sanitized);
+        return Number.isFinite(numero) ? numero : null;
+      }
+
+      function parseIntegerInput(value) {
+        if (value === null || value === undefined) {
+          return 0;
+        }
+        const digits = String(value).replace(/\D/g, '');
+        if (!digits) {
+          return 0;
+        }
+        return Number(digits);
+      }
+
+      function getAvailableYears() {
+        const yearsSet = new Set();
+
+        // Recolectar años de storeConfig
+        for (const storeKey in storeConfig) {
+          const config = storeConfig[storeKey];
+          if (config && config.months && Array.isArray(config.months)) {
+            for (const month of config.months) {
+              const year = month.split('-')[0];
+              if (year && year.length === 4) {
+                yearsSet.add(year);
+              }
+            }
+          }
+        }
+
+        return {
+          allYears: Array.from(yearsSet).sort(
+            (a, b) => parseInt(a) - parseInt(b)
+          ),
+        };
+      }
+
+      function getLatestYearWithRealData() {
+        const { allYears } = getAvailableYears();
+        return allYears.length > 0 ? allYears[allYears.length - 1] : null;
+      }
+
+      function filterMonthsByYear(months, year) {
+        if (!year || !months) {
+          return months || [];
+        }
+        return months.filter((month) => month.startsWith(year + '-'));
+      }
+
+      function formatMonthLabel(isoValue) {
+        if (!isoValue) {
+          return '';
+        }
+        if (SCENARIO_LABELS[isoValue]) {
+          return SCENARIO_LABELS[isoValue];
+        }
+        const date = new Date(`${isoValue}T00:00:00Z`);
+        const month = date.getUTCMonth();
+        const year = String(date.getUTCFullYear()).slice(-2);
+        return `${MONTH_LABELS[month]} ${year}`;
+      }
+
+      function parseMonthKey(monthKey) {
+        if (!monthKey || SCENARIO_LABELS[monthKey]) {
+          return null;
+        }
+        const date = new Date(`${monthKey}T00:00:00Z`);
+        if (Number.isNaN(date.getTime())) {
+          return null;
+        }
+        return date;
+      }
+
+      function getRentFactorForMonth(rentConfig, monthKey) {
+        if (!rentConfig) {
+          return 1;
+        }
+        const baseFactor = Number(rentConfig.factor || 1);
+        if (!Number.isFinite(baseFactor) || baseFactor <= 1) {
+          return 1;
+        }
+        const parsed = parseMonthKey(monthKey);
+        if (!parsed) {
+          return 1;
+        }
+        return parsed.getUTCMonth() === 11 ? baseFactor : 1;
+      }
+
+      function getUfValueForMonth(rentConfig, monthKey) {
+        if (!rentConfig) {
+          return Number(DEFAULT_UF) || 0;
+        }
+        const ufMap = rentConfig.uf_values || {};
+        let fallback = Number(rentConfig.uf_value);
+        if (!Number.isFinite(fallback) || fallback <= 0) {
+          fallback = Number(DEFAULT_UF);
+        }
+        if (!Number.isFinite(fallback) || fallback <= 0) {
+          fallback = 1;
+        }
+        if (monthKey && Object.prototype.hasOwnProperty.call(ufMap, monthKey)) {
+          const valor = Number(ufMap[monthKey]);
+          if (Number.isFinite(valor) && valor > 0) {
+            return valor;
+          }
+        }
+        return fallback > 0 ? fallback : 1;
+      }
+
+      function computeDefaultMarginsForBanner(bannerKey, months) {
+        const stores =
+          bannerKey === ALL_BANNERS_VALUE
+            ? allStoreKeys
+            : bannerMap[bannerKey] || [];
+        const sums = {};
+        const counts = {};
+        for (const storeKey of stores) {
+          const config = storeConfig[storeKey];
+          if (!config) {
+            continue;
+          }
+          for (const mes of months) {
+            const baseMargin = Number((config.margins || {})[mes]);
+            if (Number.isFinite(baseMargin)) {
+              sums[mes] = (sums[mes] || 0) + baseMargin;
+              counts[mes] = (counts[mes] || 0) + 1;
+            }
+          }
+        }
+        const defaults = {};
+        for (const mes of months) {
+          if (counts[mes]) {
+            defaults[mes] = sums[mes] / counts[mes];
+          } else {
+            defaults[mes] = 0;
+          }
+        }
+        return defaults;
+      }
+
+      function ensureBannerAdjustments(bannerKey, months, options = {}) {
+        const { skipMargins = false } = options || {};
+        if (!bannerKey) {
+          return { deflators: {}, margins: {} };
+        }
+        if (!bannerSalesDeflators[bannerKey]) {
+          bannerSalesDeflators[bannerKey] = {};
+        }
+
+        const deflators = bannerSalesDeflators[bannerKey];
+        const monthSet = new Set(months);
+
+        for (const mes of months) {
+          if (!Object.prototype.hasOwnProperty.call(deflators, mes)) {
+            deflators[mes] = 0;
+          }
+        }
+
+        for (const mes of Object.keys(deflators)) {
+          if (!monthSet.has(mes)) {
+            delete deflators[mes];
+          }
+        }
+
+        if (skipMargins || bannerKey === ALL_BANNERS_VALUE) {
+          return { deflators, margins: {} };
+        }
+
+        if (!bannerMarginOverrides[bannerKey]) {
+          bannerMarginOverrides[bannerKey] = {};
+        }
+
+        const margins = bannerMarginOverrides[bannerKey];
+        const defaults = computeDefaultMarginsForBanner(bannerKey, months);
+
+        for (const mes of months) {
+          if (!Object.prototype.hasOwnProperty.call(margins, mes)) {
+            const base = defaults[mes];
+            margins[mes] = Number.isFinite(base)
+              ? Math.round(base * 10) / 10
+              : 0;
+          }
+        }
+
+        for (const mes of Object.keys(margins)) {
+          if (!monthSet.has(mes)) {
+            delete margins[mes];
+          }
+        }
+
+        return { deflators, margins };
+      }
+
+      function renderBannerAdjustments(
+        bannerKey,
+        months,
+        adjustments,
+        options = {}
+      ) {
+        const {
+          onlyDeflators = false,
+          marginMode = 'original',
+          showMarginModeToggle = true,
+          isAllBanners = false,
+        } = options || {};
+        if (!bannerAdjustments || !bannerAdjustmentsGrid) {
+          return;
+        }
+        if (!bannerKey || !months.length) {
+          bannerAdjustments.style.display = 'none';
+          bannerAdjustmentsGrid.innerHTML = '';
+          return;
+        }
+
+        bannerAdjustments.style.display = '';
+        bannerAdjustmentsGrid.innerHTML = '';
+
+        const helper = bannerAdjustments.querySelector(
+          '.adjustments-header .helper'
+        );
+        if (helper) {
+          if (onlyDeflators) {
+            helper.textContent = isAllBanners
+              ? 'El deflactor de venta (%) se aplica a todas las tiendas para cada mes.'
+              : 'El deflactor de venta (%) se aplica a todas las tiendas del banner para cada mes. El margen se mantiene por tienda.';
+          } else {
+            helper.textContent =
+              'El deflactor de venta (%) y el margen (%) se aplican a todas las tiendas del banner para cada mes.';
+          }
+        }
+
+        if (marginModeGroup) {
+          if (showMarginModeToggle) {
+            marginModeGroup.style.display = '';
+            if (marginOriginalBtn && marginEditBtn) {
+              if (marginMode === 'original') {
+                marginOriginalBtn.classList.add('active');
+                marginEditBtn.classList.remove('active');
+              } else {
+                marginOriginalBtn.classList.remove('active');
+                marginEditBtn.classList.add('active');
+              }
+              marginOriginalBtn.disabled = false;
+              marginEditBtn.disabled = false;
+            }
+          } else {
+            marginModeGroup.style.display = 'none';
+            if (marginOriginalBtn && marginEditBtn) {
+              if (marginMode === 'original') {
+                marginOriginalBtn.classList.add('active');
+                marginEditBtn.classList.remove('active');
+              } else {
+                marginOriginalBtn.classList.remove('active');
+                marginEditBtn.classList.add('active');
+              }
+              marginOriginalBtn.disabled = true;
+              marginEditBtn.disabled = true;
+            }
+          }
+        }
+
+        const deflators = adjustments.deflators || {};
+        const margins = adjustments.margins || {};
+
+        months.forEach((mes) => {
+          const card = document.createElement('div');
+          card.classList.add('adjustment-card');
+
+          const heading = document.createElement('div');
+          heading.classList.add('adjustment-month');
+          heading.textContent = formatMonthLabel(mes);
+          card.appendChild(heading);
+
+          const ventaField = document.createElement('div');
+          ventaField.classList.add('adjustment-field');
+          const ventaLabel = document.createElement('span');
+          ventaLabel.classList.add('adjustment-field-label');
+          ventaLabel.textContent = 'Deflactor venta';
+          const ventaInput = document.createElement('input');
+          ventaInput.type = 'number';
+          ventaInput.step = '1';
+          ventaInput.min = '-100';
+          ventaInput.max = '300';
+          ventaInput.value = Number.isFinite(deflators[mes])
+            ? String(deflators[mes])
+            : '0';
+          ventaInput.addEventListener('input', (event) => {
+            const parsed = parseNumberInputValue(event.target.value);
+            if (parsed === null) {
+              return;
+            }
+            if (syncDeflatorsEnabled) {
+              months.forEach((m) => {
+                bannerSalesDeflators[bannerKey][m] = parsed;
+              });
+              if (syncDeflatorValueInput) {
+                syncDeflatorValueInput.value = String(parsed);
+              }
+              renderBannerResumen(bannerKey, { skipAdjustmentRender: true });
+            } else {
+              if (bannerSalesDeflators[bannerKey][mes] !== parsed) {
+                bannerSalesDeflators[bannerKey][mes] = parsed;
+                renderBannerResumen(bannerKey, { skipAdjustmentRender: true });
+              }
+            }
+          });
+          ventaField.appendChild(ventaLabel);
+          ventaField.appendChild(ventaInput);
+          card.appendChild(ventaField);
+
+          if (!onlyDeflators) {
+            const margenField = document.createElement('div');
+            margenField.classList.add('adjustment-field');
+            const margenLabel = document.createElement('span');
+            margenLabel.classList.add('adjustment-field-label');
+            margenLabel.textContent = 'Margen contribución';
+            const margenInput = document.createElement('input');
+            margenInput.type = 'number';
+            margenInput.step = '0.1';
+            margenInput.min = '-100';
+            margenInput.max = '100';
+            const displayMargin = Number.isFinite(margins[mes])
+              ? Math.round(margins[mes] * 10) / 10
+              : 0;
+            margenInput.value = displayMargin.toFixed(1);
+            margenInput.addEventListener('input', (event) => {
+              const parsed = parseNumberInputValue(event.target.value);
+              if (parsed === null) {
+                return;
+              }
+              const rounded = Math.round(parsed * 10) / 10;
+              margenInput.value = rounded.toFixed(1);
+              if (bannerMarginOverrides[bannerKey][mes] !== rounded) {
+                bannerMarginOverrides[bannerKey][mes] = rounded;
+                renderBannerResumen(bannerKey, { skipAdjustmentRender: true });
+              }
+            });
+            margenField.appendChild(margenLabel);
+            margenField.appendChild(margenInput);
+            card.appendChild(margenField);
+          }
+
+          bannerAdjustmentsGrid.appendChild(card);
+        });
+      }
+
+      function formatMillions(value) {
+        if (!Number.isFinite(value)) {
+          return '0';
+        }
+        const abs = Math.abs(value);
+        const decimals = abs >= 10 ? 0 : abs >= 1 ? 1 : 2;
+        const texto = value.toFixed(decimals);
+        return texto.replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+      }
+
+      function computeEbitdaMarginForHeatmap(structure, venta, margenDecimal) {
+        const margenContribucion = venta * margenDecimal;
+        const comisionesVendedores = venta * (structure.tasa_por_vendedor || 0);
+        const comisionesVariables =
+          comisionesVendedores + venta * (structure.tasa_total_ventas || 0);
+        const costoDotacion =
+          (structure.dotacion_fijo || 0) + comisionesVariables;
+
+        const arriendoBase = Math.max(
+          structure.arriendo_minimo || 0,
+          venta * (structure.arriendo_porcentual || 0)
+        );
+        const arriendoVariable = Math.max(
+          0,
+          arriendoBase - (structure.arriendo_minimo || 0)
+        );
+        const fondoPromocion =
+          arriendoBase * (structure.fondo_promocion_pct || 0);
+        const arriendoTotal =
+          (structure.arriendo_minimo || 0) +
+          arriendoVariable +
+          fondoPromocion +
+          (structure.arriendo_ggcc || 0);
+
+        const otrosCostos = venta * (structure.otros_costos_rate || 0);
+        const redesSistemas = structure.network_systems_cost || 0;
+        const comisionMedioPago =
+          venta * (structure.payment_commission_rate || 0);
+        const gastoOperacional =
+          costoDotacion +
+          arriendoTotal +
+          redesSistemas +
+          comisionMedioPago +
+          otrosCostos;
+        const ebitda = margenContribucion - gastoOperacional;
+
+        if (venta <= 0) {
+          return 0;
+        }
+        return (ebitda / venta) * 100;
+      }
+
+      function colorForValue(valor) {
+        if (!Number.isFinite(valor)) {
+          return { bg: '#f3f4f6', text: '#1f2937' };
+        }
+        if (valor < 0) {
+          return { bg: '#fee2e2', text: '#7f1d1d' };
+        }
+        if (valor <= 5) {
+          return { bg: '#fef3c7', text: '#78350f' };
+        }
+        return { bg: '#dcfce7', text: '#065f46' };
+      }
+
+      function buildRange(min, max, step, limit) {
+        const valores = [];
+        const tienePaso = Number.isFinite(step) && step > 0;
+
+        if (tienePaso) {
+          let actual = min;
+          let contador = 0;
+          const limiteSuperior = max + step / 10;
+          while (actual <= limiteSuperior && contador < 1000) {
+            valores.push(actual);
+            actual += step;
+            contador += 1;
+          }
+        } else if (Number.isFinite(limit) && limit > 1 && max > min) {
+          const cantidad = Math.max(2, Math.floor(limit));
+          for (let i = 0; i < cantidad; i += 1) {
+            const ratio = cantidad === 1 ? 0 : i / (cantidad - 1);
+            valores.push(min + (max - min) * ratio);
+          }
+        } else {
+          valores.push(min);
+        }
+
+        if (Number.isFinite(limit) && limit > 0) {
+          const cantidad = Math.max(1, Math.floor(limit));
+          if (valores.length > cantidad) {
+            valores.length = cantidad;
+          } else if (tienePaso) {
+            let actual = valores.length
+              ? valores[valores.length - 1] + step
+              : min;
+            let contador = 0;
+            while (valores.length < cantidad && contador < 1000) {
+              if (actual > max && valores[valores.length - 1] !== max) {
+                valores.push(max);
+                break;
+              }
+              valores.push(actual);
+              actual += step;
+              contador += 1;
+            }
+            while (valores.length < cantidad) {
+              valores.push(max);
+            }
+          } else {
+            while (valores.length < cantidad) {
+              valores.push(max);
+            }
+          }
+        }
+
+        return valores.map((valor) => {
+          if (valor < min) {
+            return min;
+          }
+          if (valor > max) {
+            return max;
+          }
+          return valor;
+        });
+      }
+
+      function renderHeatmap() {
+        if (!heatmapHead || !heatmapBody) {
+          return;
+        }
+        heatmapHead.innerHTML = '';
+        heatmapBody.innerHTML = '';
+
+        if (!currentStoreKey) {
+          return;
+        }
+
+        const config = storeConfig[currentStoreKey];
+        if (!config) {
+          return;
+        }
+
+        const staffAgg = computeStaffAggregates();
+        const rentPercentDecimal =
+          state.rent.percent > 1
+            ? state.rent.percent / 100
+            : state.rent.percent;
+        const heatmapMonthKey =
+          selectedMonth ||
+          referenceMonth ||
+          (currentMonths.length ? currentMonths[0] : '') ||
+          (availableMonths.length ? availableMonths[0] : '');
+        const rentFactorForHeatmap = getRentFactorForMonth(
+          state.rent,
+          heatmapMonthKey
+        );
+        const ufValorHeatmap = getUfValueForMonth(state.rent, heatmapMonthKey);
+
+        const estructura = {
+          dotacion_fijo: staffAgg.fijo,
+          tasa_por_vendedor:
+            staffAgg.vendedores > 0
+              ? staffAgg.tasaSumada / staffAgg.vendedores
+              : 0,
+          tasa_total_ventas: staffAgg.tasaTotalVentas,
+          otros_costos_rate: state.othersRate,
+          arriendo_minimo:
+            state.rent.vmm_uf * ufValorHeatmap * rentFactorForHeatmap,
+          arriendo_porcentual: rentPercentDecimal,
+          fondo_promocion_pct: state.rent.fondo_promocion,
+          arriendo_ggcc: state.rent.ggcc,
+          network_systems_cost: state.networkSystemsCost || 0,
+          payment_commission_rate: state.paymentCommissionRate || 0,
         };
 
-        function parseNumber(value) {
-            if (typeof value === 'number') {
-                return Number.isFinite(value) ? value : 0;
-            }
-            if (value === null || value === undefined || value === '') {
-                return 0;
-            }
-            let sanitized = String(value).replace(/\s+/g, '');
-            if (sanitized.includes(',')) {
-                sanitized = sanitized.replace(/\./g, '').replace(/,/g, '.');
+        const ventaMinBase = config.sales
+          ? Math.min(
+              ...Object.values(config.sales).filter((v) => v != null && v > 0)
+            )
+          : 5_000_000;
+        const ventaMaxBase = config.sales
+          ? Math.max(
+              ...Object.values(config.sales).filter((v) => v != null && v > 0)
+            )
+          : 15_000_000;
+        const margenMinBase = config.margins
+          ? Math.min(
+              ...Object.values(config.margins).filter((v) => v != null && v > 0)
+            ) / 100
+          : 0.25;
+        const margenMaxBase = config.margins
+          ? Math.max(
+              ...Object.values(config.margins).filter((v) => v != null && v > 0)
+            ) / 100
+          : 0.45;
+
+        const pasoVentaIngresado = parseFloat(
+          ventaStepInput.value.replace(/,/g, '.')
+        );
+        const pasoMargenIngresado = parseFloat(
+          margenStepInput.value.replace(/,/g, '.')
+        );
+        const ventaMinIngresada = parseFloat(
+          ventaMinInput.value.replace(/,/g, '.')
+        );
+        const margenMinIngresado = parseFloat(
+          margenMinInput.value.replace(/,/g, '.')
+        );
+
+        let pasoVenta =
+          Number.isFinite(pasoVentaIngresado) && pasoVentaIngresado > 0
+            ? pasoVentaIngresado * 1_000_000
+            : 500_000;
+        const pasoMargenPct =
+          Number.isFinite(pasoMargenIngresado) && pasoMargenIngresado > 0
+            ? pasoMargenIngresado
+            : 1;
+        const pasoMargen = pasoMargenPct / 100;
+
+        if (!(Number.isFinite(pasoVentaIngresado) && pasoVentaIngresado > 0)) {
+          ventaStepInput.value = formatMillions(pasoVenta / 1_000_000);
+        }
+
+        const ventaInicialRaw =
+          Number.isFinite(ventaMinIngresada) && ventaMinIngresada >= 0
+            ? ventaMinIngresada * 1_000_000
+            : null;
+        let ventaInicial =
+          ventaInicialRaw !== null
+            ? ventaInicialRaw
+            : Math.max(0, ventaMinBase * 0.8);
+        if (ventaInicialRaw === null) {
+          ventaMinInput.value = formatMillions(ventaInicial / 1_000_000);
+        }
+
+        const margenInicialRaw =
+          Number.isFinite(margenMinIngresado) && margenMinIngresado >= 0
+            ? margenMinIngresado / 100
+            : null;
+        let margenInicial =
+          margenInicialRaw !== null
+            ? margenInicialRaw
+            : Math.max(0, margenMinBase - 0.05);
+        if (margenInicialRaw === null) {
+          margenMinInput.value = (margenInicial * 100)
+            .toFixed(1)
+            .replace(/\.0+$/, '');
+        }
+
+        const nivelesVentaIngresado = parseInt(ventaLevelsInput.value, 10);
+        const nivelesMargenIngresado = parseInt(margenLevelsInput.value, 10);
+
+        const nivelesVenta =
+          Number.isFinite(nivelesVentaIngresado) && nivelesVentaIngresado >= 1
+            ? nivelesVentaIngresado
+            : 15;
+        const nivelesMargen =
+          Number.isFinite(nivelesMargenIngresado) && nivelesMargenIngresado >= 1
+            ? nivelesMargenIngresado
+            : 20;
+
+        const ventasMax = Math.max(
+          ventaInicial + pasoVenta * Math.max(nivelesVenta - 1, 0),
+          ventaMaxBase * 1.2
+        );
+        const margenesMax = Math.min(
+          Math.max(
+            margenInicial + pasoMargen * Math.max(nivelesMargen - 1, 0),
+            margenMaxBase + 0.05
+          ),
+          1
+        );
+
+        const ventas = buildRange(
+          ventaInicial,
+          ventasMax,
+          pasoVenta,
+          nivelesVenta
+        );
+        const margenes = buildRange(
+          margenInicial,
+          margenesMax,
+          pasoMargen,
+          nivelesMargen
+        );
+
+        if (ventas.length === 0 || margenes.length === 0) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.textContent =
+            'Configura incrementos válidos para generar la tabla.';
+          row.appendChild(cell);
+          heatmapHead
+            .appendChild(document.createElement('tr'))
+            .appendChild(document.createElement('th')).textContent =
+            'Simulación';
+          heatmapBody.appendChild(row);
+          return;
+        }
+
+        const matriz = ventas.map(() => []);
+
+        ventas.forEach((venta, idxVenta) => {
+          margenes.forEach((margen, idxMargen) => {
+            const margenEbitda = computeEbitdaMarginForHeatmap(
+              estructura,
+              venta,
+              margen
+            );
+            matriz[idxVenta][idxMargen] = margenEbitda;
+          });
+        });
+
+        const headerRow = document.createElement('tr');
+        const esquina = document.createElement('th');
+        esquina.textContent = 'Venta / Margen';
+        headerRow.appendChild(esquina);
+        margenes.forEach((margen) => {
+          const th = document.createElement('th');
+          th.textContent = percentFormatter.format(margen * 100) + '%';
+          headerRow.appendChild(th);
+        });
+        heatmapHead.appendChild(headerRow);
+
+        ventas.forEach((venta, idxVenta) => {
+          const fila = document.createElement('tr');
+          const encabezado = document.createElement('th');
+          encabezado.textContent = currencyFormatter.format(venta);
+          fila.appendChild(encabezado);
+
+          matriz[idxVenta].forEach((valor) => {
+            const celda = document.createElement('td');
+            if (Number.isFinite(valor)) {
+              const colores = colorForValue(valor);
+              celda.textContent = percentFormatter.format(valor) + '%';
+              celda.style.backgroundColor = colores.bg;
+              celda.style.color = colores.text;
             } else {
-                const dotCount = (sanitized.match(/\./g) || []).length;
-                if (dotCount > 1) {
-                    sanitized = sanitized.replace(/\./g, '');
-                }
+              celda.textContent = '–';
+              celda.style.backgroundColor = '#f3f4f6';
             }
-            const numero = Number(sanitized);
-            return Number.isFinite(numero) ? numero : 0;
+            fila.appendChild(celda);
+          });
+          heatmapBody.appendChild(fila);
+        });
+      }
+
+      function resetScenario() {
+        currentStoreKey = '';
+        currentMonths = [];
+        availableMonths = [];
+        selectedMonth = '';
+        state.sales = {};
+        state.margins = {};
+        state.staff = {};
+        state.rent = {
+          vmm_uf: 0,
+          percent: 0,
+          fondo_promocion: 0,
+          ggcc: 0,
+          uf_value: Number(DEFAULT_UF) || 0,
+          uf_values: {},
+          factor: 1,
+        };
+        state.othersRate = 0;
+        resultRegistry = {};
+        resultHead.innerHTML = '';
+        resultBody.innerHTML = '';
+        dotacionCommissionRow.innerHTML = '';
+        dotacionOthersRow.innerHTML = '';
+        dotacionTotalEl.textContent = '0';
+        rentVmmInput.value = '';
+        rentPercentInput.value = '';
+        rentFondoInput.value = '';
+        rentGgccInput.value = '';
+        rentUfInput.value = Number(DEFAULT_UF)
+          ? ufFormatter.format(Number(DEFAULT_UF))
+          : '';
+        othersRateInput.value = '';
+        rentThresholdValue.textContent = '–';
+        if (periodToggle) {
+          periodToggle.style.display = 'none';
+        }
+        if (monthSelectWrapper) {
+          monthSelectWrapper.style.display = 'none';
+        }
+        if (monthSelect) {
+          monthSelect.innerHTML =
+            '<option value="">Selecciona una sucursal…</option>';
+          monthSelect.value = '';
+          monthSelect.disabled = true;
+        }
+        periodButtons.forEach((btn) => {
+          const isActive = btn.dataset.period === simulationMode;
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        if (simulationLayout) {
+          simulationLayout.classList.remove('is-month-mode');
+        }
+        resultCard.style.display = 'none';
+        parametersCard.style.display = 'none';
+        if (heatmapCard) {
+          heatmapCard.style.display = 'none';
+        }
+        if (heatmapHead) {
+          heatmapHead.innerHTML = '';
+        }
+        if (heatmapBody) {
+          heatmapBody.innerHTML = '';
+        }
+        if (ventaMinInput) ventaMinInput.value = '';
+        if (ventaStepInput) ventaStepInput.value = '0.5';
+        if (ventaLevelsInput) ventaLevelsInput.value = '15';
+        if (margenMinInput) margenMinInput.value = '';
+        if (margenStepInput) margenStepInput.value = '1';
+        if (margenLevelsInput) margenLevelsInput.value = '20';
+      }
+
+      function getActiveMonths() {
+        if (simulationMode === 'month') {
+          return SCENARIO_KEYS.slice();
+        }
+        const selectedYear = yearSelect.value;
+        return filterMonthsByYear(availableMonths.slice(), selectedYear);
+      }
+
+      function populateMonthSelect() {
+        if (!monthSelect) {
+          return;
+        }
+        monthSelect.innerHTML = '';
+        if (!availableMonths.length) {
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Sin meses disponibles';
+          monthSelect.appendChild(placeholder);
+          monthSelect.disabled = true;
+          return;
+        }
+        for (const mes of availableMonths) {
+          const option = document.createElement('option');
+          option.value = mes;
+          option.textContent = formatMonthLabel(mes) || mes;
+          monthSelect.appendChild(option);
+        }
+        if (!selectedMonth || !availableMonths.includes(selectedMonth)) {
+          selectedMonth = availableMonths[0];
+        }
+        monthSelect.value = selectedMonth || '';
+        monthSelect.disabled = false;
+        referenceMonth = selectedMonth || availableMonths[0] || '';
+      }
+
+      function updatePeriodControls() {
+        if (!periodToggle) {
+          return;
+        }
+        const shouldShowToggle =
+          simulationMode === 'month' || availableMonths.length > 0;
+        periodToggle.style.display = shouldShowToggle ? '' : 'none';
+        periodButtons.forEach((btn) => {
+          const isActive = btn.dataset.period === simulationMode;
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        if (!monthSelectWrapper) {
+          return;
+        }
+        // Ocultar SIEMPRE el selector de mes cuando no estamos en modo mensual
+        if (simulationMode !== 'month') {
+          monthSelectWrapper.style.display = 'none';
+          if (monthSelect) {
+            monthSelect.disabled = true;
+          }
+          updateLayoutMode();
+          return;
+        }
+        // Modo mensual: el selector de mes tampoco se usa; mantener oculto y deshabilitado
+        monthSelectWrapper.style.display = 'none';
+        if (monthSelect) {
+          monthSelect.disabled = true;
+        }
+        updateLayoutMode();
+      }
+
+      function updateLayoutMode() {
+        if (!simulationLayout) {
+          return;
+        }
+        if (
+          simulationMode === 'month' &&
+          currentStoreKey &&
+          currentMonths.length
+        ) {
+          simulationLayout.classList.add('is-month-mode');
+        } else {
+          simulationLayout.classList.remove('is-month-mode');
+        }
+      }
+
+      function determineReferenceMonth(config) {
+        if (!config) {
+          return '';
+        }
+        if (
+          referenceMonth &&
+          config.sales &&
+          Object.prototype.hasOwnProperty.call(config.sales, referenceMonth)
+        ) {
+          return referenceMonth;
+        }
+        if (Array.isArray(config.months)) {
+          for (const monthKey of config.months) {
+            if (
+              config.sales &&
+              Object.prototype.hasOwnProperty.call(config.sales, monthKey)
+            ) {
+              return monthKey;
+            }
+          }
+        }
+        if (config.sales) {
+          const keys = Object.keys(config.sales);
+          if (keys.length) {
+            return keys[0];
+          }
+        }
+        return '';
+      }
+
+      function ensureScenarioDefaults(config) {
+        if (simulationMode !== 'month') {
+          return;
+        }
+        const refKey = determineReferenceMonth(config);
+        referenceMonth = refKey;
+        let baseSale = 0;
+        let baseMargin = 0;
+        if (refKey) {
+          if (
+            config.sales &&
+            Object.prototype.hasOwnProperty.call(config.sales, refKey)
+          ) {
+            const rawSale = config.sales[refKey];
+            baseSale =
+              rawSale !== null && rawSale !== undefined
+                ? Math.max(Math.round(Number(rawSale) || 0), 0)
+                : 0;
+          }
+          if (
+            config.margins &&
+            Object.prototype.hasOwnProperty.call(config.margins, refKey)
+          ) {
+            const rawMargin = config.margins[refKey];
+            baseMargin =
+              rawMargin !== null && rawMargin !== undefined
+                ? Math.max(Number(rawMargin) || 0, 0)
+                : 0;
+          }
+        }
+        for (const key of SCENARIO_KEYS) {
+          if (state.sales[key] === undefined) {
+            state.sales[key] = baseSale;
+          }
+          if (state.margins[key] === undefined) {
+            state.margins[key] = baseMargin;
+          }
+        }
+      }
+
+      function updateDotacionTotalDisplay(total) {
+        const value = Math.max(Math.round(total), 0);
+        dotacionTotalEl.textContent = staffFormatter.format(value);
+      }
+
+      function computeAnnualAggregate(valoresPorMes, meses, formato) {
+        if (!valoresPorMes || !Array.isArray(meses)) {
+          return null;
+        }
+        let total = 0;
+        let count = 0;
+        let hasValue = false;
+        for (const mes of meses) {
+          const valor = valoresPorMes[mes];
+          if (typeof valor !== 'number' || Number.isNaN(valor)) {
+            continue;
+          }
+          if (formato === 'percent') {
+            total += valor;
+            count += 1;
+          } else {
+            total += valor;
+            hasValue = true;
+          }
+        }
+        if (formato === 'percent') {
+          return count > 0 ? total / count : null;
+        }
+        return hasValue ? total : null;
+      }
+
+      function computeStaffAggregates() {
+        let fijo = 0;
+        let vendedores = 0;
+        let tasaSumada = 0;
+        let tasaTotalVentas = 0;
+        let dotacionTotal = 0;
+
+        for (const rol of STAFF_ROLES) {
+          const cantidad = Number(state.staff[rol] || 0);
+          if (!Number.isFinite(cantidad) || cantidad <= 0) {
+            continue;
+          }
+          dotacionTotal += cantidad;
+          const metadata = roleCosts[rol] || {};
+          const fijoUnitario = Number(metadata.fixed || 0);
+          const comision = Number(metadata.commission || 0);
+          fijo += cantidad * fijoUnitario;
+
+          if (TOTAL_SALES_COMMISSIONS.includes(rol) && comision > 0) {
+            const tasa = comision <= 1 ? comision : comision / 100000000;
+            tasaTotalVentas += cantidad * tasa;
+            continue;
+          }
+
+          if (EXCLUDED_COMMISSION_ROLES.includes(rol)) {
+            continue;
+          }
+
+          if (comision > 1) {
+            fijo += cantidad * comision;
+          } else if (comision > 0) {
+            vendedores += cantidad;
+            tasaSumada += cantidad * comision;
+          }
         }
 
-        function parseIntegerInput(value) {
-            if (value === null || value === undefined) {
-                return 0;
-            }
-            const digits = String(value).replace(/\D/g, '');
-            if (!digits) {
-                return 0;
-            }
-            return Number(digits);
+        return { fijo, vendedores, tasaSumada, tasaTotalVentas, dotacionTotal };
+      }
+
+      function buildResultTableStructure(config, months) {
+        resultRegistry = {};
+        resultHead.innerHTML = '';
+        resultBody.innerHTML = '';
+        if (Array.isArray(months) && months.length > 0) {
+          currentMonths = months.slice();
+        } else {
+          currentMonths = Array.isArray(config.months)
+            ? config.months.slice()
+            : [];
+        }
+        if (simulationMode === 'month') {
+          ensureScenarioDefaults(config);
         }
 
-        function formatMonthLabel(isoValue) {
-            if (!isoValue) {
-                return '';
+        const showTotals = simulationMode !== 'month';
+        const headerRow = document.createElement('tr');
+        const cuentaTh = document.createElement('th');
+        cuentaTh.textContent = 'Cuenta';
+        headerRow.appendChild(cuentaTh);
+        for (const mes of currentMonths) {
+          const th = document.createElement('th');
+          th.textContent = formatMonthLabel(mes);
+          headerRow.appendChild(th);
+        }
+        if (showTotals) {
+          const totalTh = document.createElement('th');
+          totalTh.textContent = 'Total año';
+          headerRow.appendChild(totalTh);
+        }
+        resultHead.appendChild(headerRow);
+
+        const subMetrics = new Set([
+          'Arriendo_fijo',
+          'Arriendo_variable',
+          'Arriendo_fondo_promocion',
+          'Arriendo_GGCC',
+          'Remuneraciones_fijo',
+          'Remuneraciones_comisiones',
+        ]);
+
+        for (const configEntry of metricConfig) {
+          const row = document.createElement('tr');
+          if (subMetrics.has(configEntry.id)) {
+            row.classList.add('sub-row');
+          }
+          const header = document.createElement('th');
+          header.textContent = configEntry.label;
+          row.appendChild(header);
+
+          const cells = {};
+          for (const mes of currentMonths) {
+            const cell = document.createElement('td');
+            cell.dataset.metric = configEntry.id;
+            if (configEntry.id === 'Venta') {
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.inputMode = 'numeric';
+              input.pattern = '[0-9]*';
+              const storedValue = state.sales[mes];
+              let numeric;
+              if (storedValue !== undefined) {
+                numeric = Math.max(Math.round(Number(storedValue) || 0), 0);
+              } else {
+                let baseValue = config.sales ? config.sales[mes] : undefined;
+                if (
+                  (baseValue === undefined || baseValue === null) &&
+                  simulationMode === 'month' &&
+                  referenceMonth &&
+                  config.sales &&
+                  Object.prototype.hasOwnProperty.call(
+                    config.sales,
+                    referenceMonth
+                  )
+                ) {
+                  baseValue = config.sales[referenceMonth];
+                }
+                numeric =
+                  baseValue !== null && baseValue !== undefined
+                    ? Math.max(Math.round(Number(baseValue) || 0), 0)
+                    : 0;
+                state.sales[mes] = numeric;
+              }
+              input.value = numeric ? currencyFormatter.format(numeric) : '';
+              input.addEventListener('input', (event) => {
+                const value = parseIntegerInput(event.target.value);
+                state.sales[mes] = value;
+                event.target.value = value
+                  ? currencyFormatter.format(value)
+                  : '';
+                if (typeof event.target.setSelectionRange === 'function') {
+                  const length = event.target.value.length;
+                  event.target.setSelectionRange(length, length);
+                }
+                recompute();
+              });
+              input.addEventListener('blur', (event) => {
+                const value = parseIntegerInput(event.target.value);
+                state.sales[mes] = value;
+                event.target.value = value
+                  ? currencyFormatter.format(value)
+                  : '';
+              });
+              cell.appendChild(input);
+              cells[mes] = { type: 'input', input };
+            } else if (configEntry.id === 'Margen_contribucion') {
+              const input = document.createElement('input');
+              input.type = 'number';
+              input.step = '0.1';
+              input.min = '0';
+              const storedValue = state.margins[mes];
+              let numeric;
+              if (storedValue !== undefined) {
+                numeric = Math.max(Number(storedValue) || 0, 0);
+              } else {
+                let baseValue = config.margins
+                  ? config.margins[mes]
+                  : undefined;
+                if (
+                  (baseValue === undefined || baseValue === null) &&
+                  simulationMode === 'month' &&
+                  referenceMonth &&
+                  config.margins &&
+                  Object.prototype.hasOwnProperty.call(
+                    config.margins,
+                    referenceMonth
+                  )
+                ) {
+                  baseValue = config.margins[referenceMonth];
+                }
+                numeric =
+                  baseValue !== null && baseValue !== undefined
+                    ? Math.max(Number(baseValue) || 0, 0)
+                    : 0;
+                state.margins[mes] = numeric;
+              }
+              input.value = numeric
+                ? numeric
+                    .toFixed(1)
+                    .replace(/\.0+$/, '')
+                    .replace(/(\.\d*?)0+$/, '$1')
+                : '';
+              input.addEventListener('input', (event) => {
+                const value = Math.max(parseNumber(event.target.value), 0);
+                state.margins[mes] = value;
+                recompute();
+              });
+              cell.appendChild(input);
+              cells[mes] = { type: 'input', input };
+            } else {
+              const span = document.createElement('span');
+              span.textContent = '–';
+              cell.appendChild(span);
+              cells[mes] = { type: 'display', element: span };
             }
-            const date = new Date(`${isoValue}T00:00:00Z`);
-            const month = date.getUTCMonth();
-            const year = String(date.getUTCFullYear()).slice(-2);
-            return `${MONTH_LABELS[month]} ${year}`;
+            row.appendChild(cell);
+          }
+          let totalCell = null;
+          if (showTotals) {
+            totalCell = document.createElement('td');
+            totalCell.classList.add('total-cell');
+            totalCell.dataset.metric = configEntry.id;
+            totalCell.textContent = '–';
+            row.appendChild(totalCell);
+          }
+          resultBody.appendChild(row);
+
+          resultRegistry[configEntry.id] = {
+            format: configEntry.format,
+            editable:
+              configEntry.id === 'Venta' ||
+              configEntry.id === 'Margen_contribucion',
+            cells,
+            totalCell,
+          };
+        }
+      }
+
+      function buildStaffGrid(config) {
+        dotacionCommissionRow.innerHTML = '';
+        dotacionOthersRow.innerHTML = '';
+        state.staff = {};
+        let dotacionTotal = 0;
+
+        const renderCard = (container, rol) => {
+          const cantidadBase = Number(config.staff[rol] || 0);
+          const cantidad = Math.max(Math.round(cantidadBase), 0);
+          state.staff[rol] = cantidad;
+          dotacionTotal += cantidad;
+
+          const card = document.createElement('div');
+          card.classList.add('dotacion-card');
+          if (cantidad <= 0) {
+            card.classList.add('is-empty');
+          }
+
+          const label = document.createElement('label');
+          label.textContent = rol;
+          card.appendChild(label);
+
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.step = '1';
+          input.min = '0';
+          input.inputMode = 'numeric';
+          input.pattern = '[0-9]*';
+          input.value = cantidad;
+          input.addEventListener('input', (event) => {
+            const value = Math.max(
+              Math.round(parseNumber(event.target.value)),
+              0
+            );
+            event.target.value = value;
+            state.staff[rol] = value;
+            if (value <= 0) {
+              card.classList.add('is-empty');
+            } else {
+              card.classList.remove('is-empty');
+            }
+            recompute();
+          });
+          card.appendChild(input);
+
+          const metadata = roleCosts[rol] || {};
+          const fijo = currencyFormatter.format(metadata.fixed || 0);
+          const parts = [`Costo fijo base: ${fijo}`];
+          if (metadata.commission) {
+            if (metadata.commission > 1) {
+              parts.push(
+                `Variable: ${currencyFormatter.format(
+                  metadata.commission
+                )} por persona`
+              );
+            } else {
+              const porcentaje = (metadata.commission * 100)
+                .toFixed(2)
+                .replace(/\.0+$/, '')
+                .replace(/(\.\d*?)0+$/, '$1');
+              parts.push(`Variable: ${porcentaje}% sobre ventas`);
+            }
+          }
+          const helper = document.createElement('small');
+          helper.textContent = parts.join(' · ');
+          card.appendChild(helper);
+
+          container.appendChild(card);
+        };
+
+        const appendPlaceholders = (container) => {
+          const needed = Math.max(0, 5 - container.children.length);
+          for (let i = 0; i < needed; i += 1) {
+            const placeholder = document.createElement('div');
+            placeholder.classList.add('dotacion-card', 'placeholder');
+            container.appendChild(placeholder);
+          }
+        };
+
+        for (const rol of COMMISSION_ROLES) {
+          renderCard(dotacionCommissionRow, rol);
+        }
+        appendPlaceholders(dotacionCommissionRow);
+
+        for (const rol of NON_COMMISSION_ROLES) {
+          renderCard(dotacionOthersRow, rol);
+        }
+        appendPlaceholders(dotacionOthersRow);
+
+        for (const rol of STAFF_ROLES) {
+          if (state.staff[rol] === undefined) {
+            state.staff[rol] = 0;
+          }
         }
 
-        function resetScenario() {
-            currentStoreKey = '';
-            currentMonths = [];
-            state.sales = {};
-            state.margins = {};
-            state.staff = {};
-            state.rent = { vmm_uf: 0, percent: 0, fondo_promocion: 0, ggcc: 0, uf_value: DEFAULT_UF };
-            state.othersRate = 0;
-            resultRegistry = {};
-            resultHead.innerHTML = '';
-            resultBody.innerHTML = '';
-            dotacionCommissionRow.innerHTML = '';
-            dotacionOthersRow.innerHTML = '';
-            dotacionTotalEl.textContent = '0';
-            rentVmmInput.value = '';
-            rentPercentInput.value = '';
-            rentFondoInput.value = '';
-            rentGgccInput.value = '';
-            rentUfInput.value = DEFAULT_UF || '';
-            othersRateInput.value = '';
-            rentThresholdValue.textContent = '–';
-            resultCard.style.display = 'none';
-            parametersCard.style.display = 'none';
-        }
+        updateDotacionTotalDisplay(dotacionTotal);
+      }
 
-        function updateDotacionTotalDisplay(total) {
-            const value = Math.max(Math.round(total), 0);
-            dotacionTotalEl.textContent = staffFormatter.format(value);
-        }
+      function buildRentInputs(config) {
+        const ufValuesConfig =
+          config && config.rent ? config.rent.uf_values : {};
+        const ufValues =
+          ufValuesConfig && typeof ufValuesConfig === 'object'
+            ? Object.fromEntries(
+                Object.entries(ufValuesConfig).map(([mes, valor]) => [
+                  mes,
+                  Number(valor) || 0,
+                ])
+              )
+            : {};
+        state.rent = {
+          vmm_uf: Math.max(Number(config.rent.vmm_uf || 0), 0),
+          percent: Math.max(Number(config.rent.percent || 0), 0),
+          fondo_promocion: Math.max(
+            Number(config.rent.fondo_promocion || 0),
+            0
+          ),
+          ggcc: Math.max(Number(config.rent.ggcc || 0), 0),
+          uf_value: Math.max(
+            Number(config.rent.uf_value || DEFAULT_UF || 0),
+            0
+          ),
+          uf_values: ufValues,
+          factor: Math.max(Number(config.rent.factor || 1), 1),
+        };
+        state.othersRate = Math.max(Number(config.others_rate || 0), 0);
+        state.networkSystemsCost = Number(config.network_systems_cost || 0);
+        state.paymentCommissionRate = Number(
+          config.payment_commission_rate || 0
+        );
 
-        function computeAnnualAggregate(valoresPorMes, meses, formato) {
-            if (!valoresPorMes || !Array.isArray(meses)) {
-                return null;
-            }
-            let total = 0;
-            let count = 0;
-            let hasValue = false;
-            for (const mes of meses) {
-                const valor = valoresPorMes[mes];
-                if (typeof valor !== 'number' || Number.isNaN(valor)) {
-                    continue;
-                }
-                if (formato === 'percent') {
-                    total += valor;
-                    count += 1;
-                } else {
-                    total += valor;
-                    hasValue = true;
-                }
-            }
-            if (formato === 'percent') {
-                return count > 0 ? total / count : null;
-            }
-            return hasValue ? total : null;
-        }
+        rentVmmInput.value = state.rent.vmm_uf
+          ? currencyFormatter.format(state.rent.vmm_uf)
+          : '';
+        rentPercentInput.value = state.rent.percent
+          ? (state.rent.percent * 100)
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+        rentFondoInput.value = state.rent.fondo_promocion
+          ? (state.rent.fondo_promocion * 100)
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+        rentGgccInput.value = state.rent.ggcc
+          ? currencyFormatter.format(state.rent.ggcc)
+          : '';
+        rentUfInput.value = state.rent.uf_value
+          ? ufFormatter.format(state.rent.uf_value)
+          : '';
+        othersRateInput.value = state.othersRate
+          ? (state.othersRate * 100)
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+      }
 
-        function computeStaffAggregates() {
-            let fijo = 0;
-            let vendedores = 0;
-            let tasaSumada = 0;
-            let tasaTotalVentas = 0;
-            let dotacionTotal = 0;
-
-            for (const rol of STAFF_ROLES) {
-                const cantidad = Number(state.staff[rol] || 0);
-                if (!Number.isFinite(cantidad) || cantidad <= 0) {
-                    continue;
-                }
-                dotacionTotal += cantidad;
-                const metadata = roleCosts[rol] || {};
-                const fijoUnitario = Number(metadata.fixed || 0);
-                const comision = Number(metadata.commission || 0);
-                fijo += cantidad * fijoUnitario;
-
-                if (TOTAL_SALES_COMMISSIONS.includes(rol) && comision > 0) {
-                    const tasa = comision <= 1 ? comision : comision / 100000000;
-                    tasaTotalVentas += cantidad * tasa;
-                    continue;
-                }
-
-                if (EXCLUDED_COMMISSION_ROLES.includes(rol)) {
-                    continue;
-                }
-
-                if (comision > 1) {
-                    fijo += cantidad * comision;
-                } else if (comision > 0) {
-                    vendedores += cantidad;
-                    tasaSumada += cantidad * comision;
-                }
-            }
-
-            return { fijo, vendedores, tasaSumada, tasaTotalVentas, dotacionTotal };
-        }
-
-        function buildResultTableStructure(config) {
-            resultRegistry = {};
-            resultHead.innerHTML = '';
-            resultBody.innerHTML = '';
-            currentMonths = config.months.slice();
-
-            const headerRow = document.createElement('tr');
-            const cuentaTh = document.createElement('th');
-            cuentaTh.textContent = 'Cuenta';
-            headerRow.appendChild(cuentaTh);
+      function updateResultTable(resultados) {
+        for (const configEntry of metricConfig) {
+          const registry = resultRegistry[configEntry.id];
+          if (!registry) {
+            continue;
+          }
+          const valores = resultados[configEntry.id] || {};
+          if (!registry.editable) {
             for (const mes of currentMonths) {
-                const th = document.createElement('th');
-                th.textContent = formatMonthLabel(mes);
-                headerRow.appendChild(th);
+              const entry = registry.cells[mes];
+              if (!entry) {
+                continue;
+              }
+              const valor = valores[mes];
+              if (
+                valor === null ||
+                valor === undefined ||
+                Number.isNaN(valor)
+              ) {
+                entry.element.textContent = '–';
+              } else if (registry.format === 'percent') {
+                entry.element.textContent =
+                  percentFormatter.format(valor) + '%';
+              } else {
+                entry.element.textContent = currencyFormatter.format(valor);
+              }
             }
-            const totalTh = document.createElement('th');
-            totalTh.textContent = 'Total año';
-            headerRow.appendChild(totalTh);
-            resultHead.appendChild(headerRow);
-
-            state.sales = {};
-            state.margins = {};
-
-            const subMetrics = new Set([
-                'Arriendo_fijo',
-                'Arriendo_variable',
-                'Arriendo_fondo_promocion',
-                'Arriendo_GGCC',
-                'Remuneraciones_fijo',
-                'Remuneraciones_comisiones'
-            ]);
-
-            for (const configEntry of metricConfig) {
-                const row = document.createElement('tr');
-                if (subMetrics.has(configEntry.id)) {
-                    row.classList.add('sub-row');
-                }
-                const header = document.createElement('th');
-                header.textContent = configEntry.label;
-                row.appendChild(header);
-
-                const cells = {};
-                for (const mes of currentMonths) {
-                    const cell = document.createElement('td');
-                    cell.dataset.metric = configEntry.id;
-                    if (configEntry.id === 'Venta') {
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.inputMode = 'numeric';
-                        input.pattern = '[0-9]*';
-                        const baseValue = config.sales[mes];
-                        if (baseValue !== null && baseValue !== undefined) {
-                            const numeric = Math.max(Math.round(Number(baseValue) || 0), 0);
-                            state.sales[mes] = numeric;
-                            input.value = numeric ? currencyFormatter.format(numeric) : '';
-                        } else {
-                            state.sales[mes] = 0;
-                            input.value = '';
-                        }
-                        input.addEventListener('input', (event) => {
-                            const value = parseIntegerInput(event.target.value);
-                            state.sales[mes] = value;
-                            event.target.value = value ? currencyFormatter.format(value) : '';
-                            if (typeof event.target.setSelectionRange === 'function') {
-                                const length = event.target.value.length;
-                                event.target.setSelectionRange(length, length);
-                            }
-                            recompute();
-                        });
-                        input.addEventListener('blur', (event) => {
-                            const value = parseIntegerInput(event.target.value);
-                            state.sales[mes] = value;
-                            event.target.value = value ? currencyFormatter.format(value) : '';
-                        });
-                        cell.appendChild(input);
-                        cells[mes] = { type: 'input', input };
-                    } else if (configEntry.id === 'Margen_contribucion') {
-                        const input = document.createElement('input');
-                        input.type = 'number';
-                        input.step = '0.1';
-                        input.min = '0';
-                        const baseValue = config.margins[mes];
-                        if (baseValue !== null && baseValue !== undefined) {
-                            const numeric = Math.max(Number(baseValue) || 0, 0);
-                            state.margins[mes] = numeric;
-                            input.value = numeric.toFixed(1).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
-                        } else {
-                            state.margins[mes] = 0;
-                            input.value = '';
-                        }
-                        input.addEventListener('input', (event) => {
-                            const value = Math.max(parseNumber(event.target.value), 0);
-                            state.margins[mes] = value;
-                            recompute();
-                        });
-                        cell.appendChild(input);
-                        cells[mes] = { type: 'input', input };
-                    } else {
-                        const span = document.createElement('span');
-                        span.textContent = '–';
-                        cell.appendChild(span);
-                        cells[mes] = { type: 'display', element: span };
-                    }
-                    row.appendChild(cell);
-                }
-                const totalCell = document.createElement('td');
-                totalCell.classList.add('total-cell');
-                totalCell.dataset.metric = configEntry.id;
-                totalCell.textContent = '–';
-                row.appendChild(totalCell);
-                resultBody.appendChild(row);
-
-                resultRegistry[configEntry.id] = {
-                    format: configEntry.format,
-                    editable: configEntry.id === 'Venta' || configEntry.id === 'Margen_contribucion',
-                    cells,
-                    totalCell,
-                };
+          }
+          if (registry.totalCell) {
+            const total = computeAnnualAggregate(
+              valores,
+              currentMonths,
+              registry.format
+            );
+            if (total === null || total === undefined || Number.isNaN(total)) {
+              registry.totalCell.textContent = '–';
+            } else if (registry.format === 'percent') {
+              registry.totalCell.textContent =
+                percentFormatter.format(total) + '%';
+            } else {
+              registry.totalCell.textContent = currencyFormatter.format(total);
             }
+          }
         }
+      }
 
-        function buildStaffGrid(config) {
-            dotacionCommissionRow.innerHTML = '';
-            dotacionOthersRow.innerHTML = '';
-            state.staff = {};
-            let dotacionTotal = 0;
-
-            const renderCard = (container, rol) => {
-                const cantidadBase = Number(config.staff[rol] || 0);
-                const cantidad = Math.max(Math.round(cantidadBase), 0);
-                state.staff[rol] = cantidad;
-                dotacionTotal += cantidad;
-
-                const card = document.createElement('div');
-                card.classList.add('dotacion-card');
-                if (cantidad <= 0) {
-                    card.classList.add('is-empty');
-                }
-
-                const label = document.createElement('label');
-                label.textContent = rol;
-                card.appendChild(label);
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.step = '1';
-                input.min = '0';
-                input.inputMode = 'numeric';
-                input.pattern = '[0-9]*';
-                input.value = cantidad;
-                input.addEventListener('input', (event) => {
-                    const value = Math.max(Math.round(parseNumber(event.target.value)), 0);
-                    event.target.value = value;
-                    state.staff[rol] = value;
-                    if (value <= 0) {
-                        card.classList.add('is-empty');
-                    } else {
-                        card.classList.remove('is-empty');
-                    }
-                    recompute();
-                });
-                card.appendChild(input);
-
-                const metadata = roleCosts[rol] || {};
-                const fijo = currencyFormatter.format(metadata.fixed || 0);
-                const parts = [`Costo fijo base: ${fijo}`];
-                if (metadata.commission) {
-                    if (metadata.commission > 1) {
-                        parts.push(`Variable: ${currencyFormatter.format(metadata.commission)} por persona`);
-                    } else {
-                        const porcentaje = (metadata.commission * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
-                        parts.push(`Variable: ${porcentaje}% sobre ventas`);
-                    }
-                }
-                const helper = document.createElement('small');
-                helper.textContent = parts.join(' · ');
-                card.appendChild(helper);
-
-                container.appendChild(card);
-            };
-
-            const appendPlaceholders = (container) => {
-                const needed = Math.max(0, 5 - container.children.length);
-                for (let i = 0; i < needed; i += 1) {
-                    const placeholder = document.createElement('div');
-                    placeholder.classList.add('dotacion-card', 'placeholder');
-                    container.appendChild(placeholder);
-                }
-            };
-
-            for (const rol of COMMISSION_ROLES) {
-                renderCard(dotacionCommissionRow, rol);
-            }
-            appendPlaceholders(dotacionCommissionRow);
-
-            for (const rol of NON_COMMISSION_ROLES) {
-                renderCard(dotacionOthersRow, rol);
-            }
-            appendPlaceholders(dotacionOthersRow);
-
-            for (const rol of STAFF_ROLES) {
-                if (state.staff[rol] === undefined) {
-                    state.staff[rol] = 0;
-                }
-            }
-
-            updateDotacionTotalDisplay(dotacionTotal);
+      function recompute() {
+        if (!currentStoreKey || !currentMonths.length) {
+          return;
         }
+        const staffAgg = computeStaffAggregates();
+        updateDotacionTotalDisplay(staffAgg.dotacionTotal);
 
-        function buildRentInputs(config) {
-            state.rent = {
-                vmm_uf: Math.max(Number(config.rent.vmm_uf || 0), 0),
-                percent: Math.max(Number(config.rent.percent || 0), 0),
-                fondo_promocion: Math.max(Number(config.rent.fondo_promocion || 0), 0),
-                ggcc: Math.max(Number(config.rent.ggcc || 0), 0),
-                uf_value: Math.max(Number(config.rent.uf_value || DEFAULT_UF || 0), 0),
-            };
-            state.othersRate = Math.max(Number(config.others_rate || 0), 0);
-
-            rentVmmInput.value = state.rent.vmm_uf ? currencyFormatter.format(state.rent.vmm_uf) : '';
-            rentPercentInput.value = state.rent.percent ? (state.rent.percent * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-            rentFondoInput.value = state.rent.fondo_promocion ? (state.rent.fondo_promocion * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-            rentGgccInput.value = state.rent.ggcc ? currencyFormatter.format(state.rent.ggcc) : '';
-            rentUfInput.value = state.rent.uf_value ? ufFormatter.format(state.rent.uf_value) : '';
-            othersRateInput.value = state.othersRate ? (state.othersRate * 100).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-        }
-
-        function updateResultTable(resultados) {
-            for (const configEntry of metricConfig) {
-                const registry = resultRegistry[configEntry.id];
-                if (!registry) {
-                    continue;
-                }
-                const valores = resultados[configEntry.id] || {};
-                if (!registry.editable) {
-                    for (const mes of currentMonths) {
-                        const entry = registry.cells[mes];
-                        if (!entry) {
-                            continue;
-                        }
-                        const valor = valores[mes];
-                        if (valor === null || valor === undefined || Number.isNaN(valor)) {
-                            entry.element.textContent = '–';
-                        } else if (registry.format === 'percent') {
-                            entry.element.textContent = percentFormatter.format(valor) + '%';
-                        } else {
-                            entry.element.textContent = currencyFormatter.format(valor);
-                        }
-                    }
-                }
-                const total = computeAnnualAggregate(valores, currentMonths, registry.format);
-                if (total === null || total === undefined || Number.isNaN(total)) {
-                    registry.totalCell.textContent = '–';
-                } else if (registry.format === 'percent') {
-                    registry.totalCell.textContent = percentFormatter.format(total) + '%';
-                } else {
-                    registry.totalCell.textContent = currencyFormatter.format(total);
-                }
-            }
-        }
-
-        function recompute() {
-            if (!currentStoreKey || !currentMonths.length) {
+        let threshold = null;
+        const rentPercentDecimal =
+          state.rent.percent > 1
+            ? state.rent.percent / 100
+            : state.rent.percent;
+        if (rentPercentDecimal > 0) {
+          const monthsToEvaluate = currentMonths.length
+            ? currentMonths
+            : availableMonths;
+          let maxThreshold = 0;
+          if (Array.isArray(monthsToEvaluate) && monthsToEvaluate.length) {
+            monthsToEvaluate.forEach((mes) => {
+              const ufValorMes = getUfValueForMonth(state.rent, mes);
+              if (!Number.isFinite(ufValorMes) || ufValorMes <= 0) {
                 return;
-            }
-            const staffAgg = computeStaffAggregates();
-            updateDotacionTotalDisplay(staffAgg.dotacionTotal);
+              }
+              const factorMes = getRentFactorForMonth(state.rent, mes);
+              const posible =
+                (state.rent.vmm_uf * ufValorMes * factorMes) /
+                rentPercentDecimal;
+              if (Number.isFinite(posible) && posible > maxThreshold) {
+                maxThreshold = posible;
+              }
+            });
+          }
+          if (maxThreshold > 0) {
+            threshold = maxThreshold;
+          }
+        }
+        rentThresholdValue.textContent =
+          threshold && threshold > 0
+            ? currencyFormatter.format(threshold)
+            : '–';
 
-            let threshold = null;
-            if (state.rent.percent > 0) {
-                threshold = (state.rent.vmm_uf * state.rent.uf_value) / state.rent.percent;
-            }
-            rentThresholdValue.textContent = threshold && threshold > 0
-                ? currencyFormatter.format(threshold)
-                : '–';
-
-            const resultados = {};
-            for (const configEntry of metricConfig) {
-                resultados[configEntry.id] = {};
-            }
-
-            for (const mes of currentMonths) {
-                const venta = Math.max(Number(state.sales[mes] || 0), 0);
-                const margenPct = Math.max(Number(state.margins[mes] || 0), 0);
-                const margenDecimal = margenPct / 100;
-
-                const contribucion = venta * margenDecimal;
-                const costoVenta = venta - contribucion;
-
-                const arriendoMinimoClp = state.rent.vmm_uf * state.rent.uf_value;
-                const montoPorcentual = venta * state.rent.percent;
-                const arriendoBase = Math.max(arriendoMinimoClp, montoPorcentual);
-                const arriendoVariable = Math.max(arriendoBase - arriendoMinimoClp, 0);
-                const arriendoFijo = arriendoBase - arriendoVariable;
-                const arriendoFondoPromocion = arriendoBase * state.rent.fondo_promocion;
-                const arriendoTotal = arriendoBase + arriendoFondoPromocion + state.rent.ggcc;
-
-                let comisionesVariables = 0;
-                if (staffAgg.vendedores > 0 && venta > 0 && staffAgg.tasaSumada > 0) {
-                    comisionesVariables += (venta / staffAgg.vendedores) * staffAgg.tasaSumada;
-                }
-                if (staffAgg.tasaTotalVentas > 0 && venta > 0) {
-                    comisionesVariables += venta * staffAgg.tasaTotalVentas;
-                }
-
-                const costoDotacion = staffAgg.fijo + comisionesVariables;
-                const otrosCostos = venta * state.othersRate;
-                const gastoOperacional = costoDotacion + arriendoTotal + otrosCostos;
-                const ebitda = contribucion - gastoOperacional;
-                const margenEbitda = venta > 0 ? (ebitda / venta) * 100 : 0;
-
-                resultados['Venta'][mes] = venta;
-                resultados['Costo_de_venta'][mes] = costoVenta;
-                resultados['Contribucion'][mes] = contribucion;
-                resultados['Margen_contribucion'][mes] = margenPct;
-                resultados['Arriendo_fijo'][mes] = arriendoFijo;
-                resultados['Arriendo_variable'][mes] = arriendoVariable;
-                resultados['Arriendo_fondo_promocion'][mes] = arriendoFondoPromocion;
-                resultados['Arriendo_GGCC'][mes] = state.rent.ggcc;
-                resultados['Arriendo_total'][mes] = arriendoTotal;
-                resultados['Remuneraciones_fijo'][mes] = staffAgg.fijo;
-                resultados['Remuneraciones_comisiones'][mes] = comisionesVariables;
-                resultados['Remuneraciones_total'][mes] = costoDotacion;
-                resultados['Otros_costos'][mes] = otrosCostos;
-                resultados['Gastos_operacionales'][mes] = gastoOperacional;
-                resultados['EBITDA'][mes] = ebitda;
-                resultados['Margen_EBITDA'][mes] = margenEbitda;
-            }
-
-            updateResultTable(resultados);
+        const resultados = {};
+        for (const configEntry of metricConfig) {
+          resultados[configEntry.id] = {};
         }
 
-        function loadStore(storeKey) {
-            const config = storeConfig[storeKey];
-            if (!config) {
-                resetScenario();
-                return;
+        for (const mes of currentMonths) {
+          const venta = Math.max(Number(state.sales[mes] || 0), 0);
+          const margenPct = Math.max(Number(state.margins[mes] || 0), 0);
+          const margenDecimal = margenPct / 100;
+          if (venta === 0) {
+            resultados['Venta'][mes] = 0;
+            resultados['Costo_de_venta'][mes] = 0;
+            resultados['Contribucion'][mes] = 0;
+            resultados['Margen_contribucion'][mes] = 0;
+            resultados['Arriendo_fijo'][mes] = 0;
+            resultados['Arriendo_variable'][mes] = 0;
+            resultados['Arriendo_fondo_promocion'][mes] = 0;
+            resultados['Arriendo_GGCC'][mes] = 0;
+            resultados['Arriendo_total'][mes] = 0;
+            resultados['Remuneraciones_fijo'][mes] = 0;
+            resultados['Remuneraciones_comisiones'][mes] = 0;
+            resultados['Remuneraciones_total'][mes] = 0;
+            resultados['Redes_sistemas'][mes] = 0;
+            resultados['Comision_medio_pago'][mes] = 0;
+            resultados['Otros_costos'][mes] = 0;
+            resultados['Gastos_operacionales'][mes] = 0;
+            resultados['EBITDA'][mes] = 0;
+            resultados['Margen_EBITDA'][mes] = 0;
+            continue;
+          }
+
+          const contribucion = venta * margenDecimal;
+          const costoVenta = venta - contribucion;
+
+          const rentFactor = getRentFactorForMonth(state.rent, mes);
+          const ufValor = getUfValueForMonth(state.rent, mes);
+          const arriendoMinimoClp = state.rent.vmm_uf * ufValor * rentFactor;
+          const montoPorcentual = venta * state.rent.percent;
+          const arriendoBase = Math.max(arriendoMinimoClp, montoPorcentual);
+          const arriendoVariable = Math.max(
+            arriendoBase - arriendoMinimoClp,
+            0
+          );
+          const arriendoFijo = arriendoBase - arriendoVariable;
+          const arriendoFondoPromocion =
+            arriendoBase * state.rent.fondo_promocion;
+          const arriendoTotal =
+            arriendoBase + arriendoFondoPromocion + state.rent.ggcc;
+
+          let comisionesVariables = 0;
+          if (staffAgg.vendedores > 0 && staffAgg.tasaSumada > 0) {
+            comisionesVariables +=
+              (venta / staffAgg.vendedores) * staffAgg.tasaSumada;
+          }
+          if (staffAgg.tasaTotalVentas > 0) {
+            comisionesVariables += venta * staffAgg.tasaTotalVentas;
+          }
+
+          const costoDotacion = staffAgg.fijo + comisionesVariables;
+          const redesSistemas = state.networkSystemsCost || 0; // Costo fijo
+          const comisionMedioPago = venta * (state.paymentCommissionRate || 0);
+          const otrosCostos = venta * state.othersRate;
+          const gastoOperacional =
+            costoDotacion +
+            arriendoTotal +
+            redesSistemas +
+            comisionMedioPago +
+            otrosCostos;
+          const ebitda = contribucion - gastoOperacional;
+          const margenEbitda = (ebitda / venta) * 100;
+
+          resultados['Venta'][mes] = venta;
+          resultados['Costo_de_venta'][mes] = costoVenta;
+          resultados['Contribucion'][mes] = contribucion;
+          resultados['Margen_contribucion'][mes] = margenPct;
+          resultados['Arriendo_fijo'][mes] = arriendoFijo;
+          resultados['Arriendo_variable'][mes] = arriendoVariable;
+          resultados['Arriendo_fondo_promocion'][mes] = arriendoFondoPromocion;
+          resultados['Arriendo_GGCC'][mes] = state.rent.ggcc;
+          resultados['Arriendo_total'][mes] = arriendoTotal;
+          resultados['Remuneraciones_fijo'][mes] = staffAgg.fijo;
+          resultados['Remuneraciones_comisiones'][mes] = comisionesVariables;
+          resultados['Remuneraciones_total'][mes] = costoDotacion;
+          resultados['Redes_sistemas'][mes] = redesSistemas;
+          resultados['Comision_medio_pago'][mes] = comisionMedioPago;
+          resultados['Otros_costos'][mes] = otrosCostos;
+          resultados['Gastos_operacionales'][mes] = gastoOperacional;
+          resultados['EBITDA'][mes] = ebitda;
+          resultados['Margen_EBITDA'][mes] = margenEbitda;
+        }
+
+        updateResultTable(resultados);
+        renderHeatmap();
+      }
+
+      function loadStore(storeKey) {
+        const config = storeConfig[storeKey];
+        if (!config) {
+          resetScenario();
+          return;
+        }
+
+        currentStoreKey = storeKey;
+        resultCard.style.display = '';
+        parametersCard.style.display = '';
+        if (heatmapCard) {
+          heatmapCard.style.display = '';
+        }
+
+        availableMonths = Array.isArray(config.months)
+          ? config.months.slice()
+          : [];
+        const selectedYear = yearSelect.value;
+        availableMonths = filterMonthsByYear(availableMonths, selectedYear);
+        populateMonthSelect();
+        updatePeriodControls();
+
+        state.sales = {};
+        state.margins = {};
+
+        const activeMonths = getActiveMonths();
+        buildResultTableStructure(config, activeMonths);
+        buildStaffGrid(config);
+        buildRentInputs(config);
+        recompute();
+        updateLayoutMode();
+      }
+
+      rentVmmInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.vmm_uf = value;
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      rentVmmInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.vmm_uf = value;
+        event.target.value = value ? ufFormatter.format(value) : '';
+      });
+      rentPercentInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.percent = value / 100;
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      rentPercentInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.percent = value / 100;
+        event.target.value = value
+          ? value
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+      });
+      rentFondoInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.fondo_promocion = value / 100;
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      rentFondoInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.fondo_promocion = value / 100;
+        event.target.value = value
+          ? value
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+      });
+      rentGgccInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.ggcc = value;
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      rentGgccInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.ggcc = value;
+        event.target.value = value ? currencyFormatter.format(value) : '';
+      });
+      rentUfInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.uf_value = value;
+        if (state.rent.uf_values) {
+          Object.keys(state.rent.uf_values).forEach((mes) => {
+            state.rent.uf_values[mes] = value;
+          });
+        }
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      rentUfInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.rent.uf_value = value;
+        if (state.rent.uf_values) {
+          Object.keys(state.rent.uf_values).forEach((mes) => {
+            state.rent.uf_values[mes] = value;
+          });
+        }
+        event.target.value = value ? ufFormatter.format(value) : '';
+      });
+      othersRateInput.addEventListener('input', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.othersRate = value / 100;
+        if (!currentStoreKey) {
+          return;
+        }
+        recompute();
+      });
+      othersRateInput.addEventListener('blur', (event) => {
+        const value = Math.max(parseNumber(event.target.value), 0);
+        state.othersRate = value / 100;
+        event.target.value = value
+          ? value
+              .toFixed(2)
+              .replace(/\.0+$/, '')
+              .replace(/(\.\d*?)0+$/, '$1')
+          : '';
+      });
+
+      if (periodButtons.length) {
+        periodButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const mode = btn.dataset.period;
+            if (!mode || mode === simulationMode) {
+              return;
             }
-
-            currentStoreKey = storeKey;
-            resultCard.style.display = '';
-            parametersCard.style.display = '';
-
-            buildResultTableStructure(config);
-            buildStaffGrid(config);
-            buildRentInputs(config);
+            simulationMode = mode;
+            updatePeriodControls();
+            if (!currentStoreKey || !storeConfig[currentStoreKey]) {
+              return;
+            }
+            if (simulationMode === 'month') {
+              ensureScenarioDefaults(storeConfig[currentStoreKey]);
+            }
+            const activeMonths = getActiveMonths();
+            buildResultTableStructure(
+              storeConfig[currentStoreKey],
+              activeMonths
+            );
             recompute();
+            updateLayoutMode();
+          });
+        });
+      }
+
+      if (monthSelect) {
+        monthSelect.addEventListener('change', () => {
+          const value = monthSelect.value;
+          if (!value) {
+            selectedMonth = '';
+            referenceMonth = '';
+            return;
+          }
+          selectedMonth = value;
+          referenceMonth = value;
+        });
+      }
+
+      function populateCompareYearSelect() {
+        if (!compareYearSelect) return;
+
+        const { allYears } = getAvailableYears();
+        const selectedYear = yearSelect.value;
+
+        compareYearSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Sin comparar';
+        compareYearSelect.appendChild(placeholder);
+
+        // Excluir el año actualmente seleccionado
+        const availableCompareYears = allYears.filter(
+          (year) => year !== selectedYear
+        );
+        for (const year of availableCompareYears) {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          compareYearSelect.appendChild(option);
+        }
+      }
+
+      function populateSelectors() {
+        // Poblar selector de año
+        const { allYears } = getAvailableYears();
+        const latestYearWithRealData = getLatestYearWithRealData();
+        yearSelect.innerHTML = '';
+        const yearPlaceholder = document.createElement('option');
+        yearPlaceholder.value = '';
+        yearPlaceholder.textContent = 'Selecciona un año…';
+        yearSelect.appendChild(yearPlaceholder);
+        for (const year of allYears) {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          yearSelect.appendChild(option);
+        }
+        // Establecer año por defecto al más reciente con datos reales
+        // if (latestYearWithRealData) {
+        //     yearSelect.value = latestYearWithRealData;
+        // }
+
+        // Poblar dropdown de comparación
+        populateCompareYearSelect();
+
+        // Poblar selector de banner
+        bannerSelect.innerHTML = '';
+        const bannerPlaceholder = document.createElement('option');
+        bannerPlaceholder.value = '';
+        bannerPlaceholder.textContent = 'Selecciona un banner…';
+        bannerSelect.appendChild(bannerPlaceholder);
+
+        const allOption = document.createElement('option');
+        allOption.value = ALL_BANNERS_VALUE;
+        allOption.textContent = ALL_BANNERS_LABEL;
+        bannerSelect.appendChild(allOption);
+
+        const banners = Object.keys(bannerMap).sort((a, b) =>
+          a.localeCompare(b)
+        );
+        for (const banner of banners) {
+          const option = document.createElement('option');
+          option.value = banner;
+          option.textContent = banner;
+          bannerSelect.appendChild(option);
         }
 
-        rentVmmInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.vmm_uf = value;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        rentVmmInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.vmm_uf = value;
-            event.target.value = value ? ufFormatter.format(value) : '';
-        });
-        rentPercentInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.percent = value / 100;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        rentPercentInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.percent = value / 100;
-            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-        });
-        rentFondoInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.fondo_promocion = value / 100;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        rentFondoInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.fondo_promocion = value / 100;
-            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-        });
-        rentGgccInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.ggcc = value;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        rentGgccInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.ggcc = value;
-            event.target.value = value ? currencyFormatter.format(value) : '';
-        });
-        rentUfInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.uf_value = value;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        rentUfInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.rent.uf_value = value;
-            event.target.value = value ? ufFormatter.format(value) : '';
-        });
-        othersRateInput.addEventListener('input', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.othersRate = value / 100;
-            if (!currentStoreKey) {
-                return;
-            }
-            recompute();
-        });
-        othersRateInput.addEventListener('blur', (event) => {
-            const value = Math.max(parseNumber(event.target.value), 0);
-            state.othersRate = value / 100;
-            event.target.value = value ? value.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') : '';
-        });
+        resetScenario();
+      }
 
-        function populateSelectors() {
-            bannerSelect.innerHTML = '';
-            const bannerPlaceholder = document.createElement('option');
-            bannerPlaceholder.value = '';
-            bannerPlaceholder.textContent = 'Selecciona un banner…';
-            bannerSelect.appendChild(bannerPlaceholder);
+      function handleBannerChange() {
+        const banner = bannerSelect.value;
+        currentBannerKey = banner || '';
+        const isAllBanners = banner === ALL_BANNERS_VALUE;
 
-            const banners = Object.keys(bannerMap).sort((a, b) => a.localeCompare(b));
-            for (const banner of banners) {
-                const option = document.createElement('option');
-                option.value = banner;
-                option.textContent = banner;
-                bannerSelect.appendChild(option);
-            }
-
-            resetScenario();
+        // Resetear comparación de año
+        if (compareYearSelect) {
+          compareYearSelect.value = '';
         }
 
-        function handleBannerChange() {
-            const banner = bannerSelect.value;
-            storeSelect.innerHTML = '';
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = banner ? 'Selecciona una sucursal…' : 'Selecciona un banner primero…';
-            storeSelect.appendChild(placeholder);
+        storeSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        const storesForSelection = isAllBanners
+          ? allStoreKeys
+          : bannerMap[banner] || [];
+        const hasStores = storesForSelection.length > 0;
+        if (banner) {
+          if (isAllBanners) {
+            bannerMarginModes[banner] = 'original';
+          } else if (!bannerMarginModes[banner]) {
+            bannerMarginModes[banner] = 'original';
+          }
+        }
+        if (!banner) {
+          placeholder.textContent = 'Selecciona un banner primero…';
+        } else if (hasStores) {
+          placeholder.textContent = 'Selecciona una sucursal…';
+        } else {
+          placeholder.textContent = 'Sin sucursales disponibles';
+        }
+        storeSelect.appendChild(placeholder);
 
-            if (!banner || !bannerMap[banner]) {
-                storeSelect.disabled = true;
-                storeSelect.setAttribute('disabled', 'disabled');
-                resetScenario();
-                return;
-            }
-
-            storeSelect.disabled = false;
-            storeSelect.removeAttribute('disabled');
-            for (const storeKey of bannerMap[banner]) {
-                const option = document.createElement('option');
-                option.value = storeKey;
-                option.textContent = storeKey;
-                storeSelect.appendChild(option);
-            }
-            storeSelect.value = '';
-            resetScenario();
+        if (!banner || (!isAllBanners && !bannerMap[banner])) {
+          storeSelect.disabled = true;
+          storeSelect.setAttribute('disabled', 'disabled');
+          resetScenario();
+          if (bannerResumenCard) {
+            bannerResumenCard.style.display = 'none';
+          }
+          if (bannerAdjustments && bannerAdjustmentsGrid) {
+            bannerAdjustments.style.display = 'none';
+            bannerAdjustmentsGrid.innerHTML = '';
+          }
+          return;
         }
 
-        function handleStoreChange() {
-            const storeKey = storeSelect.value;
-            if (!storeKey) {
-                resetScenario();
-                return;
-            }
-            loadStore(storeKey);
+        if (hasStores) {
+          storeSelect.disabled = false;
+          storeSelect.removeAttribute('disabled');
+          for (const storeKey of storesForSelection) {
+            const option = document.createElement('option');
+            option.value = storeKey;
+            option.textContent = storeKey;
+            storeSelect.appendChild(option);
+          }
+        } else {
+          storeSelect.disabled = true;
+          storeSelect.setAttribute('disabled', 'disabled');
+        }
+        storeSelect.value = '';
+        resetScenario();
+        if (bannerResumenCard) {
+          renderBannerResumen(banner);
+          bannerResumenCard.style.display = '';
+        }
+      }
+
+      function handleStoreChange() {
+        const storeKey = storeSelect.value;
+        if (!storeKey) {
+          resetScenario();
+          return;
+        }
+        loadStore(storeKey);
+      }
+
+      function handleYearChange() {
+        const selectedYear = yearSelect.value;
+        const banner = bannerSelect.value;
+
+        // Resetear comparación de año
+        if (compareYearSelect) {
+          compareYearSelect.value = '';
         }
 
-        bannerSelect.addEventListener('change', handleBannerChange);
-        storeSelect.addEventListener('change', handleStoreChange);
+        // Actualizar opciones del dropdown de comparación
+        populateCompareYearSelect();
 
-        populateSelectors();
+        // Si hay una tienda cargada, recargar los meses disponibles filtrando por el nuevo año
+        if (currentStoreKey && storeConfig[currentStoreKey]) {
+          const config = storeConfig[currentStoreKey];
+          availableMonths = Array.isArray(config.months)
+            ? config.months.slice()
+            : [];
+          availableMonths = filterMonthsByYear(availableMonths, selectedYear);
+          populateMonthSelect();
+          // Reconstruir tabla si está en modo "Año completo"
+          if (simulationMode === 'year') {
+            const activeMonths = getActiveMonths();
+            buildResultTableStructure(config, activeMonths);
+            recompute();
+          }
+        }
+
+        // Si hay un banner seleccionado, actualizar el resumen
+        if (banner) {
+          renderBannerResumen(banner);
+        }
+      }
+
+      yearSelect.addEventListener('change', handleYearChange);
+      bannerSelect.addEventListener('change', handleBannerChange);
+      storeSelect.addEventListener('change', handleStoreChange);
+
+      if (compareYearSelect) {
+        compareYearSelect.addEventListener('change', () => {
+          const banner = bannerSelect.value;
+          if (banner) {
+            renderBannerResumen(banner);
+          }
+        });
+      }
+
+      // if (widthSelect) {
+      //     if (!widthSelect.value) {
+      //         widthSelect.value = DEFAULT_CONTAINER_WIDTH;
+      //     }
+      //     applyContainerWidth(widthSelect.value || DEFAULT_CONTAINER_WIDTH);
+      //     widthSelect.addEventListener('change', (event) => {
+      //         applyContainerWidth(event.target.value || DEFAULT_CONTAINER_WIDTH);
+      //     });
+      // } else {
+      //     applyContainerWidth(DEFAULT_CONTAINER_WIDTH);
+      // }
+
+      populateSelectors();
+
+      if (ebitdaCurrencyBtn) {
+        ebitdaCurrencyBtn.addEventListener('click', () => {
+          if (currentEbitdaMode === 'currency') {
+            return;
+          }
+          currentEbitdaMode = 'currency';
+          ebitdaCurrencyBtn.classList.add('active');
+          ebitdaPercentBtn.classList.remove('active');
+          const banner = bannerSelect.value;
+          if (
+            banner &&
+            bannerResumenCard &&
+            bannerResumenCard.style.display !== 'none'
+          ) {
+            renderBannerResumen(banner);
+          }
+        });
+      }
+      if (ebitdaPercentBtn) {
+        ebitdaPercentBtn.addEventListener('click', () => {
+          if (currentEbitdaMode === 'percent') {
+            return;
+          }
+          currentEbitdaMode = 'percent';
+          ebitdaPercentBtn.classList.add('active');
+          ebitdaCurrencyBtn.classList.remove('active');
+          const banner = bannerSelect.value;
+          if (
+            banner &&
+            bannerResumenCard &&
+            bannerResumenCard.style.display !== 'none'
+          ) {
+            renderBannerResumen(banner);
+          }
+        });
+      }
+
+      if (marginOriginalBtn) {
+        marginOriginalBtn.addEventListener('click', () => {
+          if (marginOriginalBtn.disabled) {
+            return;
+          }
+          if (!currentBannerKey) {
+            return;
+          }
+          if (currentBannerKey === ALL_BANNERS_VALUE) {
+            return;
+          }
+          if (bannerMarginModes[currentBannerKey] === 'original') {
+            return;
+          }
+          bannerMarginModes[currentBannerKey] = 'original';
+          marginOriginalBtn.classList.add('active');
+          marginEditBtn.classList.remove('active');
+          renderBannerResumen(currentBannerKey);
+        });
+      }
+      if (marginEditBtn) {
+        marginEditBtn.addEventListener('click', () => {
+          if (marginEditBtn.disabled) {
+            return;
+          }
+          if (!currentBannerKey) {
+            return;
+          }
+          if (currentBannerKey === ALL_BANNERS_VALUE) {
+            return;
+          }
+          if (bannerMarginModes[currentBannerKey] === 'override') {
+            return;
+          }
+          bannerMarginModes[currentBannerKey] = 'override';
+          marginEditBtn.classList.add('active');
+          marginOriginalBtn.classList.remove('active');
+          renderBannerResumen(currentBannerKey);
+        });
+      }
+
+      if (syncDeflatorsToggle) {
+        syncDeflatorsToggle.addEventListener('click', () => {
+          syncDeflatorsEnabled = !syncDeflatorsEnabled;
+          syncDeflatorsToggle.classList.toggle('active', syncDeflatorsEnabled);
+          if (syncDeflatorGroup) {
+            syncDeflatorGroup.style.display = syncDeflatorsEnabled
+              ? ''
+              : 'none';
+          }
+        });
+      }
+      if (applyDeflatorAllBtn) {
+        applyDeflatorAllBtn.addEventListener('click', () => {
+          const banner = currentBannerKey || bannerSelect.value;
+          if (!banner) return;
+          const parsed = parseNumberInputValue(
+            syncDeflatorValueInput ? syncDeflatorValueInput.value : ''
+          );
+          if (parsed === null) return;
+          const stores =
+            banner === ALL_BANNERS_VALUE
+              ? allStoreKeys
+              : bannerMap[banner] || [];
+          if (!stores.length) return;
+          // Determine months again from active adjustments render
+          const monthSets = stores
+            .map((storeKey) => new Set(storeConfig[storeKey]?.months || []))
+            .filter((s) => s.size > 0);
+          const months = monthSets.length
+            ? Array.from(
+                monthSets.reduce(
+                  (acc, s) => new Set([...acc].filter((m) => s.has(m)))
+                )
+              )
+            : [];
+          if (!bannerSalesDeflators[banner]) bannerSalesDeflators[banner] = {};
+          months.forEach((m) => {
+            bannerSalesDeflators[banner][m] = parsed;
+          });
+          renderBannerResumen(banner);
+        });
+      }
+
+      if (ventaMinInput) {
+        ventaMinInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
+      if (ventaStepInput) {
+        ventaStepInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
+      if (ventaLevelsInput) {
+        ventaLevelsInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
+      if (margenMinInput) {
+        margenMinInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
+      if (margenStepInput) {
+        margenStepInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
+      if (margenLevelsInput) {
+        margenLevelsInput.addEventListener('input', () => {
+          if (currentStoreKey) {
+            renderHeatmap();
+          }
+        });
+      }
     </script>
-    <div class="page-footer">
-        <div class="confidential-card">Confidencial · Uso exclusivo de Yáneken</div>
-    </div>
-</body>
+  </body>
 </html>

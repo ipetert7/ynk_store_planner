@@ -9,7 +9,9 @@ import pandas as pd
 from ynk_modelo.config import (
     BUDGET_SCENARIO,
     DICTIONARY_FILE,
+    NETWORK_FILE,
     OTHER_COSTS_FILE,
+    PAYMENT_FILE,
     REAL_SCENARIO,
     RENT_FILE,
     ROLE_MAP,
@@ -29,7 +31,7 @@ def _read_excel(path: Path, sheet_name: str | int) -> pd.DataFrame:
 
 def load_dictionary() -> pd.DataFrame:
     """Carga el diccionario de tiendas y banners."""
-    return _read_excel(DICTIONARY_FILE, sheet_name="Diccionario")
+    return _read_excel(DICTIONARY_FILE, sheet_name="Hoja1")
 
 
 def _tidy_sales_sheet(df: pd.DataFrame, scenario: str, value_name: str) -> pd.DataFrame:
@@ -179,8 +181,8 @@ def load_rent() -> pd.DataFrame:
 
 def load_other_costs() -> pd.DataFrame:
     """Carga coeficientes para otros costos por banner."""
-    otros = _read_excel(OTHER_COSTS_FILE, sheet_name="Otros")
-    return otros[["Banner", "Total otros costos"]]
+    otros = _read_excel(OTHER_COSTS_FILE, sheet_name=0)
+    return otros.rename(columns={"Otros costos": "Total otros costos"})
 
 
 def load_uf_diaria() -> pd.Series:
@@ -191,3 +193,26 @@ def load_uf_diaria() -> pd.Series:
     serie = uf["UF"].astype(float)
     serie_diaria = serie.resample("D").interpolate(method="linear")
     return serie_diaria.ffill().bfill()
+
+
+def load_network_costs() -> dict[str, float]:
+    """Carga los parámetros de costos de redes y sistemas."""
+    redes = _read_excel(NETWORK_FILE, sheet_name=0)
+    
+    # Extract values from the Banner column structure
+    gasto_mensual_row = redes[redes["Banner"] == "Gasto mensual"]
+    pct_retail_row = redes[redes["Banner"] == "% asignado a retail"]
+    
+    gasto_mensual = float(gasto_mensual_row["Redes y sistemas"].iloc[0]) if not gasto_mensual_row.empty else 0.0
+    pct_retail = float(pct_retail_row["Redes y sistemas"].iloc[0]) if not pct_retail_row.empty else 0.0
+    
+    return {
+        "gasto_mensual": gasto_mensual,
+        "pct_retail": pct_retail,
+    }
+
+
+def load_payment_commission() -> pd.DataFrame:
+    """Carga las comisiones de medio de pago por banner."""
+    medio_pago = _read_excel(PAYMENT_FILE, sheet_name=0)
+    return medio_pago.rename(columns={"Medio de pago": "Comision_medio_pago"})

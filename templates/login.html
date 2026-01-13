@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - YNK Modelo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #e5e5e5;
+        }
+
+        .login-header {
+            background: #ffffff;
+            padding: 40px 30px 30px;
+            text-align: center;
+            color: #171717;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .login-header img {
+            max-width: 200px;
+            margin-bottom: 24px;
+            filter: none;
+        }
+
+        .login-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #171717;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #737373;
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #171717;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            border: 1px solid #d4d4d4;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            background: #ffffff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #171717;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+            background: #ffffff;
+        }
+
+        .form-group input::placeholder {
+            color: #a3a3a3;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            cursor: pointer;
+            accent-color: #171717;
+        }
+
+        .remember-me label {
+            font-size: 13px;
+            color: #525252;
+            cursor: pointer;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            background: #171717;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-login:hover {
+            background: #262626;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-login:active {
+            background: #0a0a0a;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border: 1px solid #fecaca;
+        }
+
+        .login-footer {
+            padding: 16px 30px;
+            background: #fafafa;
+            text-align: center;
+            font-size: 12px;
+            color: #737373;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .demo-credentials {
+            margin-top: 20px;
+            padding: 14px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .demo-credentials h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #171717;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-credentials p {
+            font-size: 13px;
+            color: #525252;
+            margin: 6px 0;
+            font-family: monospace;
+        }
+
+        .demo-credentials code {
+            background: #ffffff;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            color: #171717;
+            border: 1px solid #e5e5e5;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="/static/images/ynk-logo.svg" alt="Yáneken" onerror="this.style.display='none'">
+            <h1>YNK Store Planner</h1>
+            <p>Inicia sesión para continuar</p>
+        </div>
+
+        <div class="login-body">
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        placeholder="Ingresa tu usuario" 
+                        required 
+                        autofocus
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Ingresa tu contraseña" 
+                        required
+                    >
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Mantener sesión iniciada</label>
+                </div>
+
+                <button type="submit" class="btn-login">Iniciar Sesión</button>
+            </form>
+
+            <div class="demo-credentials">
+                <h3>🔑 Credenciales de prueba:</h3>
+                <p><strong>Admin:</strong> <code>admin</code> / <code>ynk2025</code></p>
+                <p><strong>Viewer:</strong> <code>viewer</code> / <code>viewer2025</code></p>
+            </div>
+        </div>
+
+        <div class="login-footer">
+            YNK Store Planner &copy; 2025 - Todos los derechos reservados
+        </div>
+    </div>
+</body>
+</html>

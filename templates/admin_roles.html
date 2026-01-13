@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Roles - YNK Modelo{% endblock %}
+
+{% block extra_styles %}
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e5e5e5;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #171717;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #171717;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #262626;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #171717;
+            border: 1px solid #d4d4d4;
+        }
+
+        .btn-secondary:hover {
+            background: #fafafa;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e5e5;
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .table th {
+            background: #fafafa;
+            font-weight: 600;
+            font-size: 13px;
+            color: #171717;
+        }
+
+        .table td {
+            font-size: 14px;
+            color: #525252;
+        }
+
+        .table tr:hover {
+            background: #fafafa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 12px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+
+        .badge-permission {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: #525252;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 16px;
+        }
+
+        .nav-links a:hover {
+            color: #171717;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #737373;
+        }
+
+        .empty-state p {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .description {
+            color: #737373;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block container_wrapper %}
+    <div class="container" style="padding: 20px;">
+        <div class="header">
+            <h1>Gestión de Roles</h1>
+            <a href="{{ url_for('admin_roles_create') }}" class="btn btn-primary">+ Nuevo Rol</a>
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">← Volver al Dashboard</a>
+        </div>
+
+        <div class="card">
+            {% if roles_with_permissions %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Rol</th>
+                        <th>Descripción</th>
+                        <th>Permisos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in roles_with_permissions %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.role.name }}</strong>
+                            {% if item.role.name == 'admin' %}
+                            <span class="badge badge-admin">Sistema</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ item.role.description or '-' }}</div>
+                        </td>
+                        <td>
+                            {% for perm in item.permissions %}
+                            <span class="badge badge-permission">{{ perm }}</span>
+                            {% endfor %}
+                            {% if not item.permissions %}
+                            <span style="color: #a3a3a3; font-size: 13px;">Sin permisos</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a href="{{ url_for('admin_roles_edit', role_id=item.role.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+                                {% if item.role.name != 'admin' %}
+                                <button onclick="deleteRole({{ item.role.id }}, '{{ item.role.name }}')" class="btn btn-danger btn-sm">Eliminar</button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No hay roles registrados</p>
+                <a href="{{ url_for('admin_roles_create') }}" class="btn btn-primary" style="margin-top: 20px;">Crear Primer Rol</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function deleteRole(roleId, roleName) {
+            if (confirm(`¿Estás seguro de que deseas eliminar el rol "${roleName}"?`)) {
+                fetch(`/admin/roles/${roleId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo eliminar el rol'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error al eliminar rol');
+                    console.error('Error:', error);
+                });
+            }
+        }
+    </script>
+    </div>
+{% endblock %}

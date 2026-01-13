@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from ynk_modelo.config import METRIC_CONFIG, SIMULATOR_TEMPLATE
+from ynk_modelo.config import DEFAULT_CONTAINER_WIDTH, METRIC_CONFIG, SIMULATOR_TEMPLATE
+from ynk_modelo.io.excel import load_network_costs, load_payment_commission, load_sales
 
 
 def build_simulator_interface(
@@ -16,10 +17,36 @@ def build_simulator_interface(
     total_sales_commissions: list[str],
     excluded_roles: list[str],
     staff_roles: list[str],
+    uf_por_mes: dict[str, float],
     uf_vigente: float,
     output: Path,
 ) -> None:
     """Actualiza el Simulador de EERR inyectando los datos calculados."""
+
+    # Calculate network costs and payment commission rates
+    network_params = load_network_costs()
+    payment_data = load_payment_commission()
+    ventas = load_sales()
+    
+    # Use stores that actually had sales, not all stores in dictionary
+    stores_with_sales = set(ventas["Sucursal"].unique()) if not ventas.empty else set()
+    num_stores = len(stores_with_sales) if stores_with_sales else 1  # Avoid division by zero
+    network_cost_per_store = (network_params["gasto_mensual"] * network_params["pct_retail"]) / num_stores
+    
+    # Create payment commission lookup by banner
+    payment_commission_lookup = {}
+    for _, row in payment_data.iterrows():
+        payment_commission_lookup[row["Banner"]] = row["Comision_medio_pago"]
+
+    uf_por_mes_norm: dict[str, float] = {}
+    for clave, valor in (uf_por_mes or {}).items():
+        try:
+            mes_dt = pd.to_datetime(clave)
+        except (TypeError, ValueError):
+            continue
+        if pd.isna(valor):
+            continue
+        uf_por_mes_norm[mes_dt.strftime("%Y-%m")] = float(valor)
 
     metric_config_json = json.dumps(
         [
@@ -70,6 +97,11 @@ def build_simulator_interface(
 
         banner_value = info.get("banner")
         banner_label = "Sin banner" if not banner_value else str(banner_value)
+        
+        # Get payment commission rate for this banner
+        payment_commission_rate = payment_commission_lookup.get(banner_label, 0.0)
+
+        uf_values = {mes: float(uf_por_mes_norm.get(mes, uf_vigente)) for mes in meses}
 
         store_config[store_key] = {
             "banner": banner_label,
@@ -83,12 +115,17 @@ def build_simulator_interface(
                 "ggcc": float(fila.get("Arriendo_GGCC", 0.0) or 0.0),
                 "fondo_promocion": float(fila.get("Arriendo_fondo_promocion_pct", 0.0) or 0.0),
                 "uf_value": float(uf_vigente or 0.0),
+                "uf_values": uf_values,
+                "factor": float(fila.get("Arriendo_factor", 1.0) or 1.0),
             },
             "others_rate": float(fila.get("Total otros costos", 0.0) or 0.0),
+            "network_systems_cost": float(network_cost_per_store),
+            "payment_commission_rate": float(payment_commission_rate),
         }
 
     store_config_json = json.dumps(store_config, ensure_ascii=False)
     default_uf_json = json.dumps(float(uf_vigente or 0.0))
+    default_width_json = json.dumps(str(int(DEFAULT_CONTAINER_WIDTH)))
 
     if not SIMULATOR_TEMPLATE.exists():
         raise FileNotFoundError(
@@ -116,6 +153,7 @@ def build_simulator_interface(
         "__TOTAL_SALES_COMMISSIONS__": total_sales_commissions_json,
         "__EXCLUDED_COMMISSION_ROLES__": excluded_roles_json,
         "__DEFAULT_UF__": default_uf_json,
+        "__DEFAULT_CONTAINER_WIDTH__": default_width_json,
     }
 
     rendered = template

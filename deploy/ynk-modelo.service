@@ -1,0 +1,25 @@
+[Unit]
+Description=YNK Modelo EBITDA Server
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USER
+Group=YOUR_GROUP
+WorkingDirectory=/path/to/YNK_Store Planner
+Environment="PATH=/path/to/YNK_Store Planner/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="ENVIRONMENT=prod"
+ExecStart=/path/to/YNK_Store Planner/.venv/bin/python3 -m ynk_modelo.cli.server
+Restart=always
+RestartSec=10
+StandardOutput=append:/path/to/YNK_Store Planner/logs/server.log
+StandardError=append:/path/to/YNK_Store Planner/logs/server_error.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/path/to/YNK_Store Planner/logs /path/to/YNK_Store Planner/output
+
+[Install]
+WantedBy=multi-user.target

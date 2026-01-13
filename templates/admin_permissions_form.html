@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if mode == 'create' %}Crear Permiso{% else %}Editar Permiso{% endif %} - YNK Modelo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e5e5;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 24px 30px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .card-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #171717;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #171717;
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            border: 1px solid #d4d4d4;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            background: #ffffff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #171717;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #a3a3a3;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #737373;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border: 1px solid #fecaca;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #171717;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #262626;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #171717;
+            border: 1px solid #d4d4d4;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #fafafa;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: #525252;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: #171717;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #0c4a6e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="{{ url_for('admin_permissions') }}">← Volver a Permisos</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h1>{% if mode == 'create' %}Crear Nuevo Permiso{% else %}Editar Permiso{% endif %}</h1>
+            </div>
+
+            <div class="card-body">
+                {% if error %}
+                <div class="error-message">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="name">Nombre del Permiso *</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            value="{{ permission.name if permission else '' }}"
+                            placeholder="ej: access_admin_users, access_eerr_report" 
+                            required
+                        >
+                        <small>El nombre debe ser único y seguir la convención: access_&lt;módulo&gt;</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            placeholder="Descripción del permiso y qué acceso otorga"
+                        >{{ permission.description if permission else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resource">Recurso</label>
+                        <input 
+                            type="text" 
+                            id="resource" 
+                            name="resource" 
+                            value="{{ permission.resource if permission else '' }}"
+                            placeholder="ej: /admin/users, /EERR_por_tienda.html" 
+                        >
+                        <small>Ruta o recurso al que otorga acceso este permiso</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="action">Acción</label>
+                        <input 
+                            type="text" 
+                            id="action" 
+                            name="action" 
+                            value="{{ permission.action if permission else '' }}"
+                            placeholder="ej: access, read, write" 
+                        >
+                        <small>Tipo de acción que permite este permiso (opcional)</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ url_for('admin_permissions') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if mode == 'create' %}Crear Permiso{% else %}Guardar Cambios{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

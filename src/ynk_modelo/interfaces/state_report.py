@@ -13,7 +13,11 @@ from ynk_modelo.config import (
     REAL_SCENARIO,
     ROLE_MAP,
 )
-from ynk_modelo.domain.eerr import build_store_base, formatear_tabla
+from ynk_modelo.domain.eerr import (
+    build_store_base,
+    formatear_tabla,
+    variable_rent_threshold,
+)
 
 def _prepare_store_data(
     eerr: pd.DataFrame,
@@ -21,10 +25,24 @@ def _prepare_store_data(
     """Agrupa la información del EERR por sucursal y banner para la interfaz web."""
     metric_ids = [clave for clave, _, _ in METRIC_CONFIG]
     data: dict[str, dict[str, object]] = {}
-    base, es_diciembre, uf_vigente = build_store_base()
+    base, _, uf_por_mes, uf_vigente = build_store_base()
     base_idx = base.set_index("Sucursal", drop=False)
     banner_map: dict[str, list[str]] = {}
     banner_summary: dict[str, dict[str, object]] = {}
+
+    uf_por_mes_map: dict[pd.Timestamp, float] = {}
+    for clave, valor in uf_por_mes.items():
+        try:
+            clave_ts = pd.to_datetime(clave)
+        except (TypeError, ValueError):
+            continue
+        uf_por_mes_map[clave_ts] = float(valor)
+
+    def obtener_uf_mes(fecha: pd.Timestamp | None) -> float:
+        if fecha is None:
+            return uf_vigente
+        fecha_ts = pd.to_datetime(fecha)
+        return uf_por_mes_map.get(fecha_ts, uf_vigente)
 
     if eerr.empty:
         return data, banner_map, banner_summary
@@ -71,13 +89,25 @@ def _prepare_store_data(
         umbral_variable: float | None = None
         arriendo_vmm_uf = float('nan')
         arriendo_porcentual = float('nan')
+        factor_base = 1.0
+        threshold_normal: float | None = None
+        threshold_referencia: float | None = None
+        thresholds_por_mes: dict[str, float | None] = {}
+        uf_por_mes_detalle: dict[str, float] = {}
+        referencia_dt: pd.Timestamp | None = None
+        threshold_con_factor: float | None = None
         if str(sucursal) in base_idx.index:
             fila_base = base_idx.loc[str(sucursal)]
             if isinstance(fila_base, pd.DataFrame):
                 fila_base = fila_base.iloc[0]
 
-            factor_aplicado = float(fila_base.get("Arriendo_factor", 1.0)) if es_diciembre else 1.0
-            arriendo_minimo = float(fila_base.get("Arriendo_vmm_uf", 0.0)) * uf_vigente * factor_aplicado
+            meses_dt = [pd.to_datetime(mes) for mes in meses]
+            referencia_dt = max(meses_dt) if meses_dt else None
+            uf_referencia = obtener_uf_mes(referencia_dt)
+            factor_base = float(fila_base.get("Arriendo_factor", 1.0) or 1.0)
+            factor_aplicado_ref = factor_base if (referencia_dt is not None and referencia_dt.month == 12) else 1.0
+            arriendo_minimo_base = float(fila_base.get("Arriendo_vmm_uf", 0.0)) * uf_referencia
+            arriendo_minimo = arriendo_minimo_base * factor_aplicado_ref
             arriendo_vmm_uf = float(fila_base.get("Arriendo_vmm_uf", 0.0))
             arriendo_porcentual = float(fila_base.get("Arriendo_porcentual", 0.0))
             dotacion_total = float(fila_base.get("Dotacion_total", 0.0))
@@ -98,8 +128,26 @@ def _prepare_store_data(
                 "fondo_promocion_pct": float(fila_base.get("Arriendo_fondo_promocion_pct", 0.0)),
                 "arriendo_ggcc": float(fila_base.get("Arriendo_GGCC", 0.0)),
             }
-            if estructura["arriendo_porcentual"] > 0:
-                umbral_variable = estructura["arriendo_minimo"] / estructura["arriendo_porcentual"]
+            threshold_normal = variable_rent_threshold(arriendo_minimo_base, arriendo_porcentual)
+            threshold_referencia = variable_rent_threshold(
+                estructura["arriendo_minimo"],
+                estructura["arriendo_porcentual"],
+            )
+            umbral_variable = threshold_referencia if threshold_referencia is not None else threshold_normal
+
+            thresholds_por_mes = {}
+            uf_por_mes_detalle = {}
+            threshold_con_factor = None
+            for mes_dt in meses_dt:
+                uf_mes = obtener_uf_mes(mes_dt)
+                clave_mes = mes_dt.strftime("%Y-%m")
+                uf_por_mes_detalle[clave_mes] = uf_mes
+                factor_mes = factor_base if mes_dt.month == 12 else 1.0
+                arriendo_minimo_mes = arriendo_vmm_uf * uf_mes * factor_mes
+                threshold_mes = variable_rent_threshold(arriendo_minimo_mes, arriendo_porcentual)
+                thresholds_por_mes[clave_mes] = threshold_mes
+                if factor_mes > 1 and threshold_mes is not None:
+                    threshold_con_factor = threshold_mes
 
             venta_min = float(fila_base.get("Venta_min", 0.0))
             venta_max = float(fila_base.get("Venta_max", 0.0))
@@ -159,16 +207,33 @@ def _prepare_store_data(
             "heatmap": {
                 "structure": estructura,
                 "range": rangos,
-                "rent_threshold": umbral_variable,
+                "rent_threshold": (
+                    threshold_referencia
+                    if threshold_referencia is not None
+                    else threshold_normal if threshold_normal is not None else umbral_variable
+                ),
             },
             "ebitda": ebitda_por_mes,
             "rent_details": {
-                "threshold_clp": umbral_variable,
+                "threshold_clp": (
+                    threshold_referencia
+                    if threshold_referencia is not None
+                    else threshold_normal
+                ),
+                "threshold_peak_clp": (
+                    threshold_con_factor
+                    if threshold_con_factor is not None and factor_base > 1.0
+                    else None
+                ),
+                "peak_factor": factor_base if factor_base > 1.0 and threshold_con_factor is not None else None,
                 "vmm_uf": arriendo_vmm_uf,
                 "percent": arriendo_porcentual,
                 "fondo_promocion": float(fila_base.get("Arriendo_fondo_promocion_pct", 0.0)),
                 "dotacion_total": dotacion_total,
                 "dotacion_detalle": dotacion_detalle,
+                "default_month": referencia_dt.strftime("%Y-%m") if referencia_dt is not None else None,
+                "thresholds_by_month": thresholds_por_mes,
+                "uf_by_month": uf_por_mes_detalle,
             },
         }
 
@@ -346,4 +411,3 @@ def mostrar_eerr_sucursal(eerr: pd.DataFrame, sucursal: str) -> None:
     print(f"\nEERR mensual para: {sucursal}")
     print("")
     print(formatear_tabla(vista))
-
