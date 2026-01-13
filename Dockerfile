@@ -14,7 +14,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Crear usuario no-root para seguridad
-RUN groupadd -r ynk && useradd -r -g ynk ynk
+RUN groupadd -g 1000 ynk && useradd -u 1000 -g 1000 ynk
+
 
 # Instalar dependencias del sistema necesarias para openpyxl y pandas
 RUN apt-get update && apt-get install -y --no-install-recommends \
