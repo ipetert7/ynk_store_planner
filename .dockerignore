@@ -60,6 +60,4 @@ htmlcov/
 .env.local
 .env.*.local
 
-# Archivos de deployment
-deploy/
-scripts/
+
