@@ -2,15 +2,20 @@ services:
   ynk-modelo:
     image: ynk-modelo:latest
     container_name: ynk-modelo
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./scripts:/app/scripts
     environment:
       - ENVIRONMENT=prod
       - AUTO_REGENERATE=true
       - CHECK_INTERVAL=300
     restart: always
     logging:
-      driver: 'json-file'
+      driver: "json-file"
       options:
-        max-size: '10m'
-        max-file: '3'
+        max-size: "10m"
+        max-file: "3"
     ports:
-      - '${PORT:-8000}:8000'
+      - "${PORT:-8000}:8000"
