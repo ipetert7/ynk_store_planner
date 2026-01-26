@@ -32,7 +32,7 @@ COPY src/ ./src/
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY config/ ./config/
-#COPY scripts/ ./scripts/
+COPY scripts/ ./scripts/
 
 # Instalar dependencias Python (después de copiar el código)
 RUN pip install --upgrade pip setuptools wheel && \
