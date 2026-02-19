@@ -61,6 +61,25 @@
         .btn:hover {
             background: #262626;
         }
+
+        .app-version-indicator {
+            position: fixed;
+            right: 0.9rem;
+            bottom: 0.8rem;
+            z-index: 1200;
+            padding: 0.3rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #334155;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.09);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -72,6 +91,10 @@
         {% else %}
         <a href="{{ url_for('logout') }}" class="btn">Cerrar Sesión</a>
         {% endif %}
+    </div>
+
+    <div class="app-version-indicator" aria-label="Versión de la aplicación">
+        Versión 2026.02.1
     </div>
 </body>
 </html>
