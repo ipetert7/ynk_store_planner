@@ -1,0 +1,57 @@
+{
+  "name": "ynk-gestor-arriendos",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:sso": "node --import tsx scripts/test-sso-auth.ts",
+    "diag:sso": "bash scripts/diagnose-sso-loop.sh",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "create-user": "tsx prisma/seed.ts",
+    "backup": "tsx scripts/backup.ts",
+    "backup:list": "tsx scripts/backup-list.ts",
+    "backup:restore": "tsx scripts/backup-restore.ts",
+    "db:reset": "tsx scripts/reset-database.ts",
+    "import-stores": "tsx scripts/import-stores.ts",
+    "update-stores-erp-id": "tsx scripts/update-existing-stores-erp-id.ts",
+    "debug-excel": "tsx scripts/debug-excel.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.19.0",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "next": "^14.2.0",
+    "next-auth": "^4.24.7",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "recharts": "^3.6.0",
+    "tailwind-merge": "^3.4.0",
+    "uuid": "^10.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@types/uuid": "^10.0.0",
+    "@types/xlsx": "^0.0.35",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "prisma": "^5.19.0",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-musl-arm64-openssl-3.0.x", "linux-musl-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  externalId   Int?     @unique
+  username     String?
+  email        String   @unique
+  password     String
+  name         String
+  profileImage String?
+  role         String   @default("VISUALIZADOR")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  isActive     Boolean  @default(true)
+
+  auditLogs AuditLog[]
+}
+
+model Store {
+  id                    String   @id @default(uuid())
+  erpId                 String?  @unique
+  storeName             String
+  banner                String
+  surfaceAreaHall       Float
+  surfaceAreaTotal      Float
+  shoppingCenterOperator String
+  contractStartDate     DateTime
+  contractEndDate       DateTime
+  contractDuration     Int
+  minimumMonthlyRent    Float
+  percentageRent        Float
+  decemberFactor        Float
+  commonExpenses        Float
+  promotionFund         Float
+  notificationPeriodDays Int
+  status                String @default("ACTIVE")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Nuevos campos para renovación automática, aumentos y garantía
+  autoRenewal                Boolean @default(false)
+  rentIncreaseType           String?
+  annualRentIncreasePercentage Float?
+  guaranteeType              String?
+  guaranteeAmount            Float?
+  guaranteeCurrency          String?
+
+  auditLogs AuditLog[]
+  temporaryModifications TemporaryModification[]
+  rentIncreaseDates RentIncreaseDate[]
+
+  @@index([erpId])
+}
+
+model AuditLog {
+  id           String      @id @default(uuid())
+  userId       String
+  storeId      String
+  action       String
+  fieldChanged String?
+  oldValue     String?
+  newValue     String?
+  timestamp    DateTime    @default(now())
+  
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
+  
+  @@index([storeId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model UFValue {
+  id        String   @id @default(uuid())
+  date      DateTime @unique
+  value     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([date])
+}
+
+model TemporaryModification {
+  id                        String   @id @default(uuid())
+  storeId                   String
+  startDate                 DateTime
+  endDate                   DateTime
+  minimumMonthlyRent        Float
+  percentageRent            Float
+  decemberFactor            Float
+  originalMinimumMonthlyRent Float
+  originalPercentageRent    Float
+  originalDecemberFactor    Float
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model RentIncreaseDate {
+  id                String   @id @default(uuid())
+  storeId           String
+  increaseDate      DateTime
+  increasePercentage Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([increaseDate])
+}

@@ -1,0 +1,68 @@
+services:
+  ynk-main:
+    build:
+      context: ./ynk_main
+      dockerfile: Dockerfile
+    container_name: ynk-main
+    image: ynk-main:latest
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-local}
+      - PORT=8000
+      - SECRET_KEY=${SECRET_KEY:-ynk-dev-secret-key-change-in-production}
+      - AUTO_REGENERATE=${AUTO_REGENERATE:-true}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-300}
+      - LOG_DIR=/app/logs
+      - SSO_SECRET=${SSO_SECRET:-ynk-dev-sso-secret-change-in-production}
+      - SSO_TOKEN_TTL=${SSO_TOKEN_TTL:-900}
+      - SSO_REFRESH_TTL=${SSO_REFRESH_TTL:-28800}
+      - SSO_SYNC_SECRET=${SSO_SYNC_SECRET:-ynk-dev-sso-sync-secret-change-in-production}
+    volumes:
+      - ./ynk_main/data:/app/data
+      - ./ynk_main/output:/app/output
+      - ./ynk_main/logs:/app/logs
+      - ./ynk_main/config:/app/config:ro
+      - ./ynk_main/templates:/app/templates
+      - ./ynk_main/static:/app/static
+    networks:
+      - ynk-network
+
+  ynk-arriendos:
+    build:
+      context: "./ynk_modulo gestor arriendos"
+      dockerfile: Dockerfile
+    container_name: ynk-arriendos
+    image: ynk-arriendos:latest
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost/arriendos}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-ynk-dev-nextauth-secret-change-in-production}
+      - DATABASE_URL=${DATABASE_URL:-file:./prisma/dev.db}
+      - BACKUP_DIR=/app/backups
+      - SSO_SECRET=${SSO_SECRET:-ynk-dev-sso-secret-change-in-production}
+      - SSO_SYNC_SECRET=${SSO_SYNC_SECRET:-ynk-dev-sso-sync-secret-change-in-production}
+      - SSO_SYNC_URL=${SSO_SYNC_URL:-http://ynk-main:8000/api/sso/users}
+    volumes:
+      - "./ynk_modulo gestor arriendos/prisma:/app/prisma"
+      - "./ynk_modulo gestor arriendos/backups:/app/backups"
+      - "./ynk_modulo gestor arriendos/public:/app/public"
+    networks:
+      - ynk-network
+    depends_on:
+      - ynk-main
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ynk-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - ynk-main
+      - ynk-arriendos
+    networks:
+      - ynk-network
+
+networks:
+  ynk-network:
+    driver: bridge
