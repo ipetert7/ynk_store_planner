@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: ynk-main
     image: ynk-main:latest
+    ports:
+      - "${PORT:-8000}:8000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-local}
       - PORT=8000
