@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - Contratos por vencer{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <h1>Contratos por vencer</h1>
+
+    <form method="get" style="display:flex;gap:.6rem;align-items:center;margin-bottom:1rem;">
+        <label for="days">Días hacia adelante</label>
+        <input class="form-control" style="max-width:150px;" type="number" name="days" id="days" value="{{ days or '' }}" min="1">
+        <button class="nav-button" type="submit">Aplicar</button>
+    </form>
+
+    <div class="card">
+        {% if contracts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tienda</th>
+                    <th>Código</th>
+                    <th>Fin contrato</th>
+                    <th>Notificación (días)</th>
+                    <th>Base UF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in contracts %}
+                <tr>
+                    <td><a href="{{ url_for('arriendos.arriendos_store_detail', store_id=item.id) }}">{{ item.name }}</a></td>
+                    <td>{{ item.store_code or '-' }}</td>
+                    <td>{{ item.contract_end }}</td>
+                    <td>{{ item.notification_days }}</td>
+                    <td>{{ '%.2f'|format(item.base_rent_uf or 0) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No hay contratos próximos a vencer para el rango indicado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

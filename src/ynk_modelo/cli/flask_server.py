@@ -26,6 +26,8 @@ from flask_login import (
     logout_user,
 )
 
+from ynk_modelo.arriendos import create_blueprint
+from ynk_modelo.arriendos import service as arriendos_service
 from ynk_modelo.cli.main import generate_reports
 from ynk_modelo.config import (
     AUTO_REGENERATE,
@@ -94,10 +96,13 @@ def inject_permissions():
     try:
         from flask_login import current_user
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+            arriendos_enabled = arriendos_service.is_feature_enabled()
             return {
                 'has_access_eerr_report': current_user.has_permission("access_eerr_report"),
                 'has_access_simulator': current_user.has_permission("access_simulator"),
                 'has_access_admin_users': current_user.has_permission("access_admin_users"),
+                'has_access_arriendos': current_user.has_permission("access_arriendos_dashboard"),
+                'arriendos_enabled': arriendos_enabled,
             }
     except Exception:
         pass
@@ -105,6 +110,8 @@ def inject_permissions():
         'has_access_eerr_report': False,
         'has_access_simulator': False,
         'has_access_admin_users': False,
+        'has_access_arriendos': False,
+        'arriendos_enabled': False,
     }
 
 # FileWatcher para auto-regeneración
@@ -116,6 +123,9 @@ try:
     logger.info("✓ Base de datos inicializada")
 except Exception as e:
     logger.warning(f"⚠ Error al inicializar base de datos: {e}")
+
+# Registrar blueprint del módulo de arriendos.
+app.register_blueprint(create_blueprint())
 
 
 @login_manager.user_loader
@@ -141,7 +151,8 @@ def permission_required(permission_name: str):
                 has_eerr = current_user.has_permission("access_eerr_report")
                 has_simulator = current_user.has_permission("access_simulator")
                 has_admin = current_user.has_permission("access_admin_users")
-                can_access_dashboard = has_eerr or has_simulator or has_admin
+                has_arriendos = current_user.has_permission("access_arriendos_dashboard")
+                can_access_dashboard = has_eerr or has_simulator or has_admin or has_arriendos
                 
                 return render_template("error.html", 
                     error="No tienes permisos para acceder a esta página",
@@ -246,9 +257,11 @@ def dashboard():
     has_eerr = current_user.has_permission("access_eerr_report")
     has_simulator = current_user.has_permission("access_simulator")
     has_admin = current_user.has_permission("access_admin_users")
+    has_arriendos = current_user.has_permission("access_arriendos_dashboard")
+    arriendos_enabled = arriendos_service.is_feature_enabled()
     
     # Si no tiene ningún permiso, mostrar error
-    if not (has_eerr or has_simulator or has_admin):
+    if not (has_eerr or has_simulator or has_admin or has_arriendos):
         return render_template("error.html", 
             error="No tienes permisos para acceder a ningún módulo. Contacta al administrador.",
             error_code=403,
@@ -258,7 +271,9 @@ def dashboard():
                          active_page="dashboard",
                          has_access_eerr_report=has_eerr,
                          has_access_simulator=has_simulator,
-                         has_access_admin_users=has_admin)
+                         has_access_admin_users=has_admin,
+                         has_access_arriendos=has_arriendos,
+                         arriendos_enabled=arriendos_enabled)
 
 
 @app.route("/EERR_por_tienda.html")

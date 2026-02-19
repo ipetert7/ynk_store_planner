@@ -1,0 +1,12 @@
+<div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+    <a class="nav-button secondary {% if active_page == 'arriendos_dashboard' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_dashboard') }}">Dashboard Arriendos</a>
+    <a class="nav-button secondary {% if active_page == 'arriendos_stores' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_stores') }}">Tiendas</a>
+    <a class="nav-button secondary {% if active_page == 'arriendos_expiring' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_expiring') }}">Vencimientos</a>
+    {% if current_user.has_permission('manage_arriendos_import') %}
+    <a class="nav-button secondary {% if active_page == 'arriendos_import' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_import') }}">Importación</a>
+    {% endif %}
+    {% if current_user.has_permission('manage_arriendos_backups') %}
+    <a class="nav-button secondary {% if active_page == 'arriendos_backups' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_backups') }}">Backups</a>
+    {% endif %}
+    <a class="nav-button secondary {% if active_page == 'arriendos_profile' %}is-active{% endif %}" href="{{ url_for('arriendos.arriendos_profile') }}">Perfil</a>
+</div>

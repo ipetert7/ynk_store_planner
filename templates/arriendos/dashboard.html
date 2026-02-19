@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <h1>Gestor de Arriendos</h1>
+    <p>Modulo operativo en Flask con datos productivos en SQLite.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem;margin:1.2rem 0;">
+        <div class="card"><h3>Tiendas activas</h3><p style="font-size:1.7rem;">{{ metrics.active_stores }}</p></div>
+        <div class="card"><h3>Tiendas cerradas</h3><p style="font-size:1.7rem;">{{ metrics.closed_stores }}</p></div>
+        <div class="card"><h3>Superficie m2</h3><p style="font-size:1.7rem;">{{ '%.2f'|format(metrics.total_surface_m2) }}</p></div>
+        <div class="card"><h3>VMM total UF</h3><p style="font-size:1.7rem;">{{ '%.2f'|format(metrics.total_vmm_uf) }}</p></div>
+        <div class="card"><h3>UF vigente</h3><p style="font-size:1.7rem;">{{ '%.2f'|format(metrics.current_uf) }}</p></div>
+        <div class="card"><h3>VMM total CLP</h3><p style="font-size:1.7rem;">{{ '{:,.0f}'.format(metrics.total_vmm_clp).replace(',', '.') }}</p></div>
+    </div>
+
+    <div class="card">
+        <h2>Contratos por vencer (60 días)</h2>
+        {% if expiring %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tienda</th>
+                    <th>Código</th>
+                    <th>Fin contrato</th>
+                    <th>VMM UF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in expiring %}
+                <tr>
+                    <td><a href="{{ url_for('arriendos.arriendos_store_detail', store_id=item.id) }}">{{ item.name }}</a></td>
+                    <td>{{ item.store_code or '-' }}</td>
+                    <td>{{ item.contract_end or '-' }}</td>
+                    <td>{{ '%.2f'|format(item.base_rent_uf or 0) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No hay contratos próximos a vencer en el período.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

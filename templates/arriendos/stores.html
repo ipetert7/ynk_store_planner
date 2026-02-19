@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - Tiendas{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <h1>Tiendas y Contratos</h1>
+        <a class="nav-button" href="{{ url_for('arriendos.arriendos_store_new') }}">Nueva tienda</a>
+    </div>
+
+    <form method="get" style="display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0;">
+        <input class="form-control" type="search" name="search" value="{{ query }}" placeholder="Buscar por tienda, código o banner">
+        <select class="form-control" name="status">
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos los estados</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activas</option>
+            <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Cerradas</option>
+        </select>
+        <button class="nav-button" type="submit">Filtrar</button>
+    </form>
+
+    <div class="card">
+        {% if stores %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tienda</th>
+                    <th>Código</th>
+                    <th>Estado</th>
+                    <th>Ciudad</th>
+                    <th>VMM UF</th>
+                    <th>Fin contrato</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in stores %}
+                <tr>
+                    <td><a href="{{ url_for('arriendos.arriendos_store_detail', store_id=item.id) }}">{{ item.name }}</a></td>
+                    <td>{{ item.store_code or '-' }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.city or '-' }}</td>
+                    <td>{{ '%.2f'|format(item.base_rent_uf or 0) }}</td>
+                    <td>{{ item.contract_end or '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('arriendos.arriendos_store_edit', store_id=item.id) }}">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No se encontraron tiendas con el filtro aplicado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

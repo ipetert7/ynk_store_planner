@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - Importación{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <h1>Importación masiva de tiendas</h1>
+    <p>Sube archivo Excel y valida antes de aplicar cambios a base de datos.</p>
+
+    {% if error %}
+    <div class="card" style="border-left:4px solid #dc2626;">{{ error }}</div>
+    {% endif %}
+
+    <div class="card" style="margin-bottom:1rem;">
+        <h2>Validar archivo</h2>
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="validate">
+            <input class="form-control" type="file" name="file" accept=".xlsx,.xls,.xlsm" required>
+            <div style="margin-top:.8rem;"><button class="nav-button" type="submit">Validar</button></div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+        <h2>Procesar archivo</h2>
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="process">
+            <input class="form-control" type="file" name="file" accept=".xlsx,.xls,.xlsm" required>
+            <div style="margin-top:.8rem;"><button class="nav-button" type="submit">Procesar importación</button></div>
+        </form>
+    </div>
+
+    {% if validation %}
+    <div class="card">
+        <h2>Resultado validación</h2>
+        <p><strong>Filas:</strong> {{ validation.rows }}</p>
+        <p><strong>Estado:</strong> {{ 'Válido' if validation.valid else 'Con errores' }}</p>
+        {% if validation.errors %}
+        <ul>
+            {% for item in validation.errors %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if process_result %}
+    <div class="card">
+        <h2>Resultado procesamiento</h2>
+        <p><strong>Filas:</strong> {{ process_result.rows }}</p>
+        <p><strong>Creadas:</strong> {{ process_result.created }}</p>
+        <p><strong>Actualizadas:</strong> {{ process_result.updated }}</p>
+        <p><strong>Omitidas:</strong> {{ process_result.skipped }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

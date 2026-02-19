@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - Backups{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+        <h1>Backups de base de datos</h1>
+        <form method="post" action="{{ url_for('arriendos.arriendos_backups_create') }}">
+            <button class="nav-button" type="submit">Crear backup</button>
+        </form>
+    </div>
+
+    <div class="card">
+        {% if backups %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Tamaño</th>
+                    <th>Tiendas</th>
+                    <th>Motivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in backups %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ '{:,.0f}'.format(item.size_bytes or 0).replace(',', '.') }} bytes</td>
+                    <td>{{ item.store_count or 0 }}</td>
+                    <td>{{ item.reason or '-' }}</td>
+                    <td>
+                        <div style="display:flex;gap:.5rem;">
+                            <form method="post" action="{{ url_for('arriendos.arriendos_backups_restore', backup_id=item.id) }}" onsubmit="return confirm('¿Restaurar este backup?')">
+                                <button class="nav-button secondary" type="submit">Restaurar</button>
+                            </form>
+                            <form method="post" action="{{ url_for('arriendos.arriendos_backups_delete', backup_id=item.id) }}" onsubmit="return confirm('¿Eliminar este backup?')">
+                                <button class="nav-button secondary" type="submit">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No existen backups registrados.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -115,9 +115,17 @@
                     <p>Crea y gestiona permisos del sistema.</p>
                 </a>
                 {% endif %}
+
+                {% if has_access_arriendos and arriendos_enabled %}
+                <a href="{{ url_for('arriendos.arriendos_dashboard') }}" class="module-card simulator">
+                    <div class="module-icon">🏪</div>
+                    <h3>Gestor de Arriendos</h3>
+                    <p>Administra contratos, vencimientos, modificaciones, UF, importaciones y backups desde Flask.</p>
+                </a>
+                {% endif %}
             </div>
 
-            {% if not has_access_eerr_report and not has_access_simulator and not has_access_admin_users %}
+            {% if not has_access_eerr_report and not has_access_simulator and not has_access_admin_users and not has_access_arriendos %}
             <div class="card" style="margin-top: 2rem; text-align: center; padding: 3rem;">
                 <h2>Sin módulos disponibles</h2>
                 <p>No tienes permisos para acceder a ningún módulo. Contacta al administrador.</p>

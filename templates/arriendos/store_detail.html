@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Arriendos - {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'arriendos/_nav.html' %}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+        <h1>{{ store.name }}</h1>
+        <div style="display:flex;gap:.5rem;">
+            <a class="nav-button" href="{{ url_for('arriendos.arriendos_store_edit', store_id=store.id) }}">Editar</a>
+            {% if store.status != 'closed' %}
+            <form method="post" action="{{ url_for('arriendos.arriendos_store_close', store_id=store.id) }}" onsubmit="return confirm('¿Cerrar tienda?')">
+                <button class="nav-button secondary" type="submit">Cerrar tienda</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <p><strong>Código:</strong> {{ store.store_code or '-' }}</p>
+        <p><strong>Banner:</strong> {{ store.banner or '-' }}</p>
+        <p><strong>Ubicación:</strong> {{ store.city or '-' }}{% if store.region %}, {{ store.region }}{% endif %}</p>
+        <p><strong>Dirección:</strong> {{ store.address or '-' }}</p>
+        <p><strong>Estado:</strong> {{ store.status }}</p>
+        <p><strong>Superficie:</strong> {{ '%.2f'|format(store.surface_m2 or 0) }} m2</p>
+    </div>
+
+    <div class="card">
+        <h2>Contratos</h2>
+        {% if store.contracts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Base UF</th>
+                    <th>Variable %</th>
+                    <th>GGCC CLP</th>
+                    <th>Activo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in store.contracts %}
+                <tr>
+                    <td>{{ item.contract_start }}</td>
+                    <td>{{ item.contract_end or '-' }}</td>
+                    <td>{{ '%.2f'|format(item.base_rent_uf or 0) }}</td>
+                    <td>{{ '%.2f'|format(item.variable_rent_pct or 0) }}</td>
+                    <td>{{ '{:,.0f}'.format(item.ggcc_clp or 0).replace(',', '.') }}</td>
+                    <td>{{ 'Sí' if item.is_active else 'No' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Sin contratos registrados.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Modificaciones temporales</h2>
+        {% if store.temporary_modifications %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Campo</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                    <th>Nuevo valor</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in store.temporary_modifications %}
+                <tr>
+                    <td>{{ item.field_name }}</td>
+                    <td>{{ item.start_date }}</td>
+                    <td>{{ item.end_date }}</td>
+                    <td>{{ item.new_value }}</td>
+                    <td>{{ 'Activa' if item.is_active else 'Inactiva' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Sin modificaciones temporales.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Modificaciones permanentes</h2>
+        {% if store.permanent_modifications %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Campo</th>
+                    <th>Fecha efectiva</th>
+                    <th>Nuevo valor</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in store.permanent_modifications %}
+                <tr>
+                    <td>{{ item.field_name }}</td>
+                    <td>{{ item.effective_date }}</td>
+                    <td>{{ item.new_value }}</td>
+                    <td>{{ item.reason or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Sin modificaciones permanentes.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Auditoría</h2>
+        {% if store.audit %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Entidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in store.audit %}
+                <tr>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.username or '-' }}</td>
+                    <td>{{ item.action }}</td>
+                    <td>{{ item.entity_type }} #{{ item.entity_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Sin registros de auditoría.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
