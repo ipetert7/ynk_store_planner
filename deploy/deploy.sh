@@ -26,6 +26,25 @@ repair_permissions() {
   fi
 }
 
+ensure_runtime_permissions() {
+  local repo_path="$1"
+  local runtime_dirs=("$repo_path/data" "$repo_path/output" "$repo_path/logs")
+
+  echo "🧰 Verificando permisos de runtime para Docker..."
+  mkdir -p "${runtime_dirs[@]}"
+
+  if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    # El contenedor corre como UID/GID 1000 (usuario ynk en la imagen)
+    sudo chown -R 1000:1000 "${runtime_dirs[@]}"
+    sudo chmod -R ug+rwX "${runtime_dirs[@]}"
+    echo "✅ Permisos de runtime ajustados para UID/GID 1000"
+  else
+    # Fallback sin sudo: permitir acceso de lectura/escritura/ejecución.
+    chmod -R a+rwX "${runtime_dirs[@]}"
+    echo "⚠️ Ajuste sin sudo aplicado (a+rwX) en data/output/logs"
+  fi
+}
+
 update_code() {
   echo "📥 Actualizando código desde GitHub..."
 
@@ -40,6 +59,7 @@ update_code() {
 }
 
 update_code
+ensure_runtime_permissions "/opt/ynk-modelo"
 
 echo "🐳 Construyendo imagen Docker..."
 ./scripts/docker-build.sh
