@@ -13,10 +13,10 @@ jobs:
       - name: Deploy on server
         run: |
           cd /opt/ynk-modelo
-          if [ -x "./deploy.sh" ]; then
-            ./deploy.sh
-          elif [ -x "./ynk_main/deploy.sh" ]; then
+          if [ -x "./ynk_main/deploy.sh" ]; then
             cd ./ynk_main
+            ./deploy.sh
+          elif [ -x "./deploy.sh" ]; then
             ./deploy.sh
           else
             echo "No deploy script found at ./deploy.sh or ./ynk_main/deploy.sh"
