@@ -16,7 +16,8 @@ jobs:
           if [ -x "./deploy.sh" ]; then
             ./deploy.sh
           elif [ -x "./ynk_main/deploy.sh" ]; then
-            ./ynk_main/deploy.sh
+            cd ./ynk_main
+            ./deploy.sh
           else
             echo "No deploy script found at ./deploy.sh or ./ynk_main/deploy.sh"
             exit 127
