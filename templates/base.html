@@ -1,83 +1,81 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}YNK Store Planner{% endblock %}</title>
     {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('serve_static', filename='css/simulador.css') }}">
-    {% endblock %}
-    {% block extra_styles %}{% endblock %}
-</head>
-<body>
-    {% include '_brand_bar.html' %}
-    
-    {% block container_wrapper %}
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('serve_static', filename='css/simulador.css') }}"
+    />
+    {% endblock %} {% block extra_styles %}{% endblock %}
+  </head>
+  <body>
+    {% include '_brand_bar.html' %} {% block container_wrapper %}
+    <div class="container">{% block content %}{% endblock %}</div>
     {% endblock %}
 
     <div class="app-version-indicator" aria-label="Versión de la aplicación">
-        Versión 2026.02.1
+      Versión 2026.02.2
     </div>
-    
+
     {% block scripts %}
     <script>
-        (function() {
-            // Inicializar cuando el DOM esté listo
-            function initDropdown() {
-                const dropdown = document.getElementById('adminDropdown');
-                if (!dropdown) return;
-                
-                const button = dropdown.querySelector('.nav-button');
-                const menu = dropdown.querySelector('.dropdown-menu');
-                
-                if (!button || !menu) return;
-                
-                // Toggle al hacer click en el botón
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const isActive = dropdown.classList.contains('active');
-                    // Cerrar todos los dropdowns
-                    document.querySelectorAll('.admin-dropdown').forEach(d => {
-                        d.classList.remove('active');
-                    });
-                    // Abrir este si estaba cerrado
-                    if (!isActive) {
-                        dropdown.classList.add('active');
-                    }
-                });
-                
-                // Prevenir que se cierre al hacer click dentro del menú
-                menu.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-                
-                // Cerrar al hacer click fuera
-                document.addEventListener('click', function(e) {
-                    if (!dropdown.contains(e.target)) {
-                        dropdown.classList.remove('active');
-                    }
-                });
-                
-                // Cerrar al presionar Escape
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        dropdown.classList.remove('active');
-                    }
-                });
+      (function () {
+        // Inicializar cuando el DOM esté listo
+        function initDropdown() {
+          const dropdown = document.getElementById("adminDropdown");
+          if (!dropdown) return;
+
+          const button = dropdown.querySelector(".nav-button");
+          const menu = dropdown.querySelector(".dropdown-menu");
+
+          if (!button || !menu) return;
+
+          // Toggle al hacer click en el botón
+          button.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isActive = dropdown.classList.contains("active");
+            // Cerrar todos los dropdowns
+            document.querySelectorAll(".admin-dropdown").forEach((d) => {
+              d.classList.remove("active");
+            });
+            // Abrir este si estaba cerrado
+            if (!isActive) {
+              dropdown.classList.add("active");
             }
-            
-            // Ejecutar cuando el DOM esté listo
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initDropdown);
-            } else {
-                initDropdown();
+          });
+
+          // Prevenir que se cierre al hacer click dentro del menú
+          menu.addEventListener("click", function (e) {
+            e.stopPropagation();
+          });
+
+          // Cerrar al hacer click fuera
+          document.addEventListener("click", function (e) {
+            if (!dropdown.contains(e.target)) {
+              dropdown.classList.remove("active");
             }
-        })();
+          });
+
+          // Cerrar al presionar Escape
+          document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+              dropdown.classList.remove("active");
+            }
+          });
+        }
+
+        // Ejecutar cuando el DOM esté listo
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initDropdown);
+        } else {
+          initDropdown();
+        }
+      })();
     </script>
     {% endblock %}
-</body>
+  </body>
 </html>
