@@ -1,100 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Error - YNK Modelo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
 
-        .error-container {
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid #e5e5e5;
-        }
+      .error-container {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        border: 1px solid #e5e5e5;
+      }
 
-        .error-code {
-            font-size: 72px;
-            font-weight: 700;
-            color: #dc2626;
-            margin-bottom: 20px;
-        }
+      .error-code {
+        font-size: 72px;
+        font-weight: 700;
+        color: #dc2626;
+        margin-bottom: 20px;
+      }
 
-        .error-message {
-            font-size: 18px;
-            color: #171717;
-            margin-bottom: 30px;
-        }
+      .error-message {
+        font-size: 18px;
+        color: #171717;
+        margin-bottom: 30px;
+      }
 
-        .btn {
-            padding: 11px 20px;
-            font-size: 14px;
-            font-weight: 500;
-            background: #171717;
-            color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
+      .btn {
+        padding: 11px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        background: #171717;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
 
-        .btn:hover {
-            background: #262626;
-        }
+      .btn:hover {
+        background: #262626;
+      }
 
-        .app-version-indicator {
-            position: fixed;
-            right: 0.9rem;
-            bottom: 0.8rem;
-            z-index: 1200;
-            padding: 0.3rem 0.55rem;
-            border-radius: 999px;
-            font-size: 0.74rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            color: #334155;
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.09);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            pointer-events: none;
-        }
+      .app-version-indicator {
+        position: fixed;
+        right: 0.9rem;
+        bottom: 0.8rem;
+        z-index: 1200;
+        padding: 0.3rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: #334155;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.09);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="error-container">
-        <div class="error-code">{{ error_code or 500 }}</div>
-        <div class="error-message">{{ error or 'Ha ocurrido un error' }}</div>
-        {% if can_access_dashboard %}
-        <a href="{{ url_for('dashboard') }}" class="btn">Volver al Dashboard</a>
-        {% else %}
-        <a href="{{ url_for('logout') }}" class="btn">Cerrar Sesión</a>
-        {% endif %}
+      <div class="error-code">{{ error_code or 500 }}</div>
+      <div class="error-message">{{ error or 'Ha ocurrido un error' }}</div>
+      {% if can_access_dashboard %}
+      <a href="{{ url_for('dashboard') }}" class="btn">Volver al Dashboard</a>
+      {% else %}
+      <a href="{{ url_for('logout') }}" class="btn">Cerrar Sesión</a>
+      {% endif %}
     </div>
 
     <div class="app-version-indicator" aria-label="Versión de la aplicación">
-        Versión 2026.02.1
+      Versión 2026.02.2
     </div>
-</body>
+  </body>
 </html>
